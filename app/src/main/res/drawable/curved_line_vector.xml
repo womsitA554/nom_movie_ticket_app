@@ -1,0 +1,13 @@
+<!-- Tạo file res/drawable/curved_line_vector.xml -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="500dp"
+    android:height="50dp"
+    android:viewportWidth="200"
+    android:viewportHeight="100">
+
+    <path
+        android:pathData="M0,100 Q100,0 200,100"
+        android:strokeWidth="10"
+        android:strokeColor="@color/orange"
+        android:fillColor="#00000000"/>
+</vector>

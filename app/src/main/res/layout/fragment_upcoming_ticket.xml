@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    tools:context=".ui.view.fragment.UpcomingTicketFragment">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="15dp"
+        android:layout_marginTop="20dp"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/btnMovie"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/button_book_now_background"
+            android:fontFamily="@font/urbanist_bold"
+            android:paddingHorizontal="20dp"
+            android:paddingVertical="10dp"
+            android:text="Movie"
+            android:textSize="18sp" />
+
+        <TextView
+            android:id="@+id/btnFood"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="15dp"
+            android:background="@drawable/button_grey_stroke_background"
+            android:fontFamily="@font/urbanist_bold"
+            android:paddingHorizontal="20dp"
+            android:paddingVertical="10dp"
+            android:text="Food"
+            android:textSize="18sp" />
+    </LinearLayout>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rcvUpcomingTicket"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginTop="80dp"
+        android:paddingHorizontal="15dp"
+        android:visibility="gone"
+        tools:listitem="@layout/upcoming_ticket_item" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rcvUpcomingFood"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginTop="80dp"
+        android:paddingHorizontal="15dp"
+        android:visibility="gone"
+        tools:listitem="@layout/upcoming_ticket_item" />
+
+    <com.airbnb.lottie.LottieAnimationView
+        android:id="@+id/progressBar"
+        android:layout_width="wrap_content"
+        android:layout_height="100dp"
+        android:layout_gravity="center"
+        app:lottie_loop="true"
+        app:lottie_rawRes="@raw/load_ani" />
+
+    <LinearLayout
+        android:id="@+id/layoutNotFoundTicket"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginTop="30dp"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:visibility="gone">
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/emoticon_cry_outline" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:fontFamily="@font/urbanist_bold"
+            android:text="Sorry, have not found any ticket."
+            style="@style/TextColor"
+            android:textSize="16sp"
+            android:textStyle="normal" />
+
+    </LinearLayout>
+</FrameLayout>

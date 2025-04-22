@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <style name="ClickableView">
+        <item name="colorControlHighlight">@color/grey</item>
+        <item name="android:background">?selectableItemBackgroundBorderless</item>
+    </style>
+
+    <style name="ThemeStripeCustom" parent="Theme.AppCompat.Light">
+        <!-- Màu chính -->
+        <item name="colorPrimary">@color/orange</item>
+        <item name="colorPrimaryDark">@color/orange</item>
+        <item name="colorAccent">@color/orange</item>
+
+        <!-- Các thuộc tính theme cụ thể của Stripe -->
+        <item name="colorControlNormal">@color/orange</item>
+        <item name="titleTextColor">@color/black</item>
+        <item name="android:textColorPrimary">@color/orange</item>
+        <item name="android:textColorSecondary">@color/orange</item>
+        <item name="android:windowBackground">@color/orange</item>
+    </style>
+
+</resources>

@@ -1,0 +1,11 @@
+<!-- Tạo file res/drawable/curved_line.xml -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+    <stroke
+        android:width="2dp"
+        android:color="#000000" />
+    <size
+        android:width="200dp"
+        android:height="100dp" />
+    <corners
+        android:radius="100dp" />
+</shape>
