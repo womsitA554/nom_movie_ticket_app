@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "246075657517",
+    "firebase_url": "https://shoponline-f6905-default-rtdb.asia-southeast1.firebasedatabase.app",
+    "project_id": "shoponline-f6905",
+    "storage_bucket": "shoponline-f6905.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:246075657517:android:9a38aca6b278a12eb697a4",
+        "android_client_info": {
+          "package_name": "com.example.kotlin_customer_nom_movie_ticket"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "246075657517-la6mf3o3dse19o5rlq798ntt3j6l9e72.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.kotlin_customer_nom_movie_ticket",
+            "certificate_hash": "a50f8ae2346e968d2da5c65759c20f4578ba71be"
+          }
+        },
+        {
+          "client_id": "246075657517-rbr39nh12g4gevpmn59fep3s42pk47b5.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDQofY5xi38l1sG8oeB2hMzCSAAh76XXiU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "246075657517-2erlhs9q1u78a73empifg2ahi0h8chad.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

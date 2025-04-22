@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="switch_padding">-1dp</dimen>
+    <dimen name="switch_radius">24dp</dimen>
+    <dimen name="switch_size">24dp</dimen>
+    <dimen name="item_spacing">10dp</dimen>
+    <dimen name="item_seat_spacing_3">3dp</dimen>
+    <dimen name="item_width">150dp</dimen>
+    <dimen name="item_spacing_15">15dp</dimen>
+    <dimen name="item_spacing_vertical_15">15dp</dimen>
+    <dimen name="item_img_height_230">230dp</dimen>
+    <dimen name="item_img_height_250">375dp</dimen>
+    <dimen name="item_height_440">440dp</dimen>
+    <dimen name="item_height_375">375dp</dimen>
+    <dimen name="item_food_height_315">235dp</dimen>
+</resources>

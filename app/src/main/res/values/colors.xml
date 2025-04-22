@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+    <color name="orange">#FE3323</color>
+    <color name="light_orange">#FBB9B3</color>
+    <color name="light_grey">#EFEFEF</color>
+    <color name="grey">#B6B6B6</color>
+    <color name="dark_grey">#6E6E6E</color>
+    <color name="star_color">#ffc107</color>
+    <color name="bar_color">#FF8400</color>
+    <color name="light_bar_color">#FBD09C</color>
+    <color name="purple">#6C0C7C</color>
+    <color name="light_green">#4EDA53</color>
+    <color name="dark_green">#2BB12F</color>
+    <color name="main_text">#878787</color>
+    <color name="dark_background">#0B0A0A</color>
+    <color name="dark_edit_text">#1E1E1E</color>
+    <color name="dialog_color">#FFFFFFFF</color>
+
+    <color name="text_dialogColor">#FF000000</color>
+    <color name="bg_dialogColor">#FFFFFFFF</color>
+
+    <color name="bottom_sheet_background">#FFFFFFFF</color>
+</resources>

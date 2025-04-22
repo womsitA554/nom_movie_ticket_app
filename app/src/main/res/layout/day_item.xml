@@ -1,0 +1,31 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="8dp"
+    android:id="@+id/btnChooseDay"
+    android:layout_marginEnd="15dp"
+    android:background="@drawable/item_white_stroke_backgound"
+    android:gravity="center">
+
+    <TextView
+        android:id="@+id/tvDayNumber"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="30sp"
+        android:textStyle="bold"
+        android:text="22"
+        android:paddingVertical="5dp"
+        android:paddingHorizontal="10dp"
+        style="@style/TextColor"/>
+
+    <TextView
+        android:id="@+id/tvDayName"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="14sp"
+        style="@style/TextColor"
+        android:paddingBottom="5dp"
+        android:text="Today" />
+
+</LinearLayout>

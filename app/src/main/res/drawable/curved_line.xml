@@ -1,0 +1,11 @@
+<!-- Tạo file res/drawable/curved_line.xml -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+    <stroke
+        android:width="2dp"
+        android:color="#000000" /> <!-- Màu và độ dày của đường -->
+    <size
+        android:width="200dp"
+        android:height="100dp" /> <!-- Kích thước của đường -->
+    <corners
+        android:radius="100dp" /> <!-- Độ cong - điều chỉnh giá trị này để thay đổi độ cong -->
+</shape>

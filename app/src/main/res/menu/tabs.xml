@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/tab_home"
+        android:icon="@drawable/home_icon"
+        android:title="Home" />
+    <item
+        android:id="@+id/tab_theater"
+        android:icon="@drawable/theater_icon"
+        android:title="Cinema" />
+    <item
+        android:id="@+id/tab_food"
+        android:icon="@drawable/food_icon"
+        android:title="Food" />
+    <item
+        android:id="@+id/tab_ticket"
+        android:icon="@drawable/ticket_icon"
+        android:title="Ticket" />
+    <item
+        android:id="@+id/tab_profile"
+        android:icon="@drawable/setting_icon"
+        android:title="Setting" />
+</menu>

@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission
+        android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+        android:maxSdkVersion="32" />
+
+    <application
+        android:name=".MyApplication"
+        android:allowBackup="true"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:fullBackupContent="@xml/backup_rules"
+        android:icon="@mipmap/ic_launcher"
+        android:label="NomMovie"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.Kotlin_customer_nom_movie_ticket"
+        tools:targetApi="31">
+        <activity
+            android:name=".ui.view.activity.PaymentActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.view.activity.MemberInformationActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.view.activity.SettingProfileActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.view.activity.OrderFoodDetailActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.view.activity.FoodAndDrinkActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.view.activity.FoodPaymentDetailActivity"
+            android:exported="false" />
+
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_icon"
+            android:resource="@drawable/logo_mini" />
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_color"
+            android:resource="@color/white" />
+
+        <activity
+            android:name=".ui.view.activity.CinemaDetailFromBookNowActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.view.activity.IntroActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.view.activity.SplashActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <meta-data
+            android:name="com.google.android.gms.version"
+            android:value="@integer/google_play_services_version" />
+        <meta-data
+            android:name="com.google.android.maps.v2.API_KEY"
+            android:value="@string/map_api_key" />
+
+        <activity
+            android:name=".ui.view.activity.CinemaDetailActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.view.activity.VideoPlayerActivity"
+            android:configChanges="orientation|screenSize|screenLayout"
+            android:exported="false"
+            android:theme="@style/Theme.AppCompat.DayNight.FullScreen" />
+        <activity
+            android:name=".ui.view.activity.CancelBookingActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.view.activity.ViewTicketActivity"
+            android:exported="false"
+            android:hardwareAccelerated="true" />
+        <activity
+            android:name=".ui.view.activity.UpcomingTicketActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.view.activity.BookingDetailActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.view.activity.PaymentDetailActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.view.activity.ChooseSeatActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.view.activity.ChooseDateAndTimeActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.view.activity.ChooseCinemaActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.view.activity.NowPlayingDetailActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.view.activity.ComingSoonDetailActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.view.activity.ComingSoonActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.view.activity.NowPlayingActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.view.activity.VerifyActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.view.activity.RegisterActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.view.activity.LoginActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.view.activity.MainActivity"
+            android:exported="false" />
+
+        <service
+            android:name=".service.Notification.MyFirebaseMessagingService"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+            </intent-filter>
+        </service>
+    </application>
+
+</manifest>
