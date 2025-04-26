@@ -4,7 +4,7 @@ data class Banner(
     val banner_id: String = "",
     val movie_id: String = "",
     val img_url: String = "",
-    val redirect_url: Long = 0,
+    val redirect_url: String = "",
     val title: String = "",
     val start_date: String = "",
     val end_date: String = "",
