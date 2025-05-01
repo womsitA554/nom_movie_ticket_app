@@ -1,5 +1,6 @@
 package com.example.kotlin_customer_nom_movie_ticket.ui.view.activity
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import androidx.activity.enableEdgeToEdge
@@ -39,6 +40,51 @@ class NowPlayingActivity : AppCompatActivity() {
 
             binding.progressBar.visibility = View.GONE
             binding.rcvNowPlaying.visibility = View.VISIBLE
+
+            movieIsShowingAdapter.onBookClick = { movie, position ->
+                val intent = Intent(this, ChooseCinemaActivity::class.java)
+                intent.putExtra("movie_id", movie.movie_id)
+                intent.putExtra("title", movie.title)
+                intent.putExtra("poster_url", movie.poster_url)
+                intent.putExtra("language", movie.language)
+                intent.putExtra("release_year", movie.release_year)
+                intent.putExtra("duration", movie.duration)
+                intent.putExtra("genre", movie.genre)
+                intent.putExtra("synopsis", movie.synopsis)
+                intent.putExtra("director_id", movie.director_id)
+                intent.putExtra("status", movie.status.name)
+                intent.putExtra("trailer_url", movie.trailer_url)
+                intent.putExtra("banner", movie.banner)
+                intent.putExtra("age_rating", movie.age_rating)
+                intent.putExtra("rating", movie.ratings.average_rating)
+                intent.putExtra("quantity_vote", movie.ratings.total_votes)
+                intent.putStringArrayListExtra("actor_ids", ArrayList(movie.actor_ids))
+                startActivity(intent)
+                overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left)
+            }
+
+            movieIsShowingAdapter.onClickItem = { movie, position ->
+                val intent = Intent(this, NowPlayingDetailActivity::class.java)
+                intent.putExtra("movie_id", movie.movie_id)
+                intent.putExtra("title", movie.title)
+                intent.putExtra("poster_url", movie.poster_url)
+                intent.putExtra("language", movie.language)
+                intent.putExtra("release_year", movie.release_year)
+                intent.putExtra("duration", movie.duration)
+                intent.putExtra("genre", movie.genre)
+                intent.putExtra("synopsis", movie.synopsis)
+                intent.putExtra("director_id", movie.director_id)
+                intent.putExtra("status", movie.status.name)
+                intent.putExtra("trailer_url", movie.trailer_url)
+                intent.putExtra("banner", movie.banner)
+                intent.putExtra("age_rating", movie.age_rating)
+                intent.putExtra("rating", movie.ratings.average_rating)
+                intent.putExtra("quantity_vote", movie.ratings.total_votes)
+                intent.putStringArrayListExtra("actor_ids", ArrayList(movie.actor_ids))
+                startActivity(intent)
+                overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left)
+            }
+
         }
 
         if (movieViewModel.movieIsShowing.value == null) {
@@ -49,6 +95,7 @@ class NowPlayingActivity : AppCompatActivity() {
             finish()
             overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right)
         }
+
     }
 
     private fun setupRecyclerView() {

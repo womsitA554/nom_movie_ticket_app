@@ -131,17 +131,6 @@ class AllCinemaFragment : Fragment() {
                 movieActorIds, movieAgeRating, movieRating, movieBanner)
             checkAllDataLoaded()
         }
-
-//        cinemaViewModel.error.observe(viewLifecycleOwner) { error ->
-//            error?.let {
-//                Toast.makeText(requireContext(), it, Toast.LENGTH_SHORT).show()
-//                Log.e("AllCinemaFragment", "Error: $it")
-//                // Đánh dấu là đã load để không chặn UI
-//                isCinemasLoaded = true
-//                isFavoriteCinemasLoaded = true
-//                checkAllDataLoaded()
-//            }
-//        }
     }
 
     private fun setupCinemaAdapter(
@@ -156,37 +145,62 @@ class AllCinemaFragment : Fragment() {
         binding.rcvAllCinema.adapter = cinemaAdapter
 
         cinemaAdapter.onClickItem = { cinema, _ ->
-            val intent = if (movieId == null) {
-                Intent(requireContext(), CinemaDetailActivity::class.java)
+            if (movieId == null) {
+                val intent = Intent(requireContext(), CinemaDetailActivity::class.java)
+                intent.putExtra("customer_id", userId)
+                intent.putExtra("cinema_id", cinema.cinema_id)
+                intent.putExtra("cinema_name", cinema.cinema_name)
+                intent.putExtra("address", cinema.address)
+                intent.putExtra("latitude", cinema.latitude)
+                intent.putExtra("longitude", cinema.longitude)
+                intent.putExtra("phone_number", cinema.phone_number)
+                intent.putExtra("created_at", cinema.created_at)
+                intent.putExtra("country", movieCountry)
+                intent.putExtra("title", movieTitle)
+                intent.putExtra("poster_url", moviePosterUrl)
+                intent.putExtra("language", movieLanguage)
+                intent.putExtra("release_year", movieReleaseYear)
+                intent.putExtra("duration", movieDuration)
+                intent.putExtra("genre", movieGenre)
+                intent.putExtra("synopsis", movieSynopsis)
+                intent.putExtra("director_id", movieDirectorId)
+                intent.putExtra("status", movieStatus)
+                intent.putExtra("trailer_url", movieTrailerUrl)
+                intent.putExtra("banner", movieBanner)
+                intent.putExtra("age_rating", movieAgeRating)
+                intent.putExtra("rating", movieRating)
+                intent.putStringArrayListExtra("actor_ids", movieActorIds?.let { ArrayList(it) })
+                startActivity(intent)
+                activity?.overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left)
             } else {
-                Intent(requireContext(), CinemaDetailFromBookNowActivity::class.java)
-                    .putExtra("movie_id", movieId)
+                val intent = Intent(requireContext(), CinemaDetailFromBookNowActivity::class.java)
+                intent.putExtra("movie_id", movieId)
+                intent.putExtra("customer_id", userId)
+                intent.putExtra("cinema_id", cinema.cinema_id)
+                intent.putExtra("cinema_name", cinema.cinema_name)
+                intent.putExtra("address", cinema.address)
+                intent.putExtra("latitude", cinema.latitude)
+                intent.putExtra("longitude", cinema.longitude)
+                intent.putExtra("phone_number", cinema.phone_number)
+                intent.putExtra("created_at", cinema.created_at)
+                intent.putExtra("country", movieCountry)
+                intent.putExtra("title", movieTitle)
+                intent.putExtra("poster_url", moviePosterUrl)
+                intent.putExtra("language", movieLanguage)
+                intent.putExtra("release_year", movieReleaseYear)
+                intent.putExtra("duration", movieDuration)
+                intent.putExtra("genre", movieGenre)
+                intent.putExtra("synopsis", movieSynopsis)
+                intent.putExtra("director_id", movieDirectorId)
+                intent.putExtra("status", movieStatus)
+                intent.putExtra("trailer_url", movieTrailerUrl)
+                intent.putExtra("banner", movieBanner)
+                intent.putExtra("age_rating", movieAgeRating)
+                intent.putExtra("rating", movieRating)
+                intent.putStringArrayListExtra("actor_ids", movieActorIds?.let { ArrayList(it) })
+                startActivity(intent)
+                activity?.overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left)
             }
-            intent.putExtra("customer_id", userId)
-            intent.putExtra("cinema_id", cinema.cinema_id)
-            intent.putExtra("cinema_name", cinema.cinema_name)
-            intent.putExtra("address", cinema.address)
-            intent.putExtra("latitude", cinema.latitude)
-            intent.putExtra("longitude", cinema.longitude)
-            intent.putExtra("phone_number", cinema.phone_number)
-            intent.putExtra("created_at", cinema.created_at)
-            intent.putExtra("country", movieCountry)
-            intent.putExtra("title", movieTitle)
-            intent.putExtra("poster_url", moviePosterUrl)
-            intent.putExtra("language", movieLanguage)
-            intent.putExtra("release_year", movieReleaseYear)
-            intent.putExtra("duration", movieDuration)
-            intent.putExtra("genre", movieGenre)
-            intent.putExtra("synopsis", movieSynopsis)
-            intent.putExtra("director_id", movieDirectorId)
-            intent.putExtra("status", movieStatus)
-            intent.putExtra("trailer_url", movieTrailerUrl)
-            intent.putExtra("banner", movieBanner)
-            intent.putExtra("age_rating", movieAgeRating)
-            intent.putExtra("rating", movieRating)
-            intent.putStringArrayListExtra("actor_ids", movieActorIds?.let { ArrayList(it) })
-            startActivity(intent)
-            activity?.overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left)
         }
     }
 

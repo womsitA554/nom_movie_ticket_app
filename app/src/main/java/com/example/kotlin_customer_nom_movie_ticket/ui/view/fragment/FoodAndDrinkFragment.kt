@@ -145,16 +145,6 @@ class FoodAndDrinkFragment : Fragment() {
             checkAllDataLoaded()
         }
 
-//        foodViewModel.error.observe(viewLifecycleOwner) { error ->
-//            error?.let {
-//                Toast.makeText(requireContext(), it, Toast.LENGTH_SHORT).show()
-//                Log.e("FoodAndDrinkFragment", "Error: $it")
-//                // Dừng animation và ẩn progressBar khi có lỗi
-//                stopAnimation()
-//                // Hiển thị scrollView ngay cả khi có lỗi để người dùng thấy danh mục đã load
-//                binding.scrollView.visibility = View.VISIBLE
-//            }
-//        }
     }
 
     private fun checkAllDataLoaded() {

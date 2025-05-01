@@ -19,8 +19,8 @@
 
     <com.google.android.material.imageview.ShapeableImageView
         android:id="@+id/picFood"
-        android:layout_width="match_parent"
-        android:layout_height="340dp"
+        android:layout_width="280dp"
+        android:layout_height="280dp"
         android:layout_marginTop="-10dp"
         android:layout_marginHorizontal="8dp"
         android:scaleType="fitXY"
@@ -31,13 +31,14 @@
 
     <TextView
         android:id="@+id/tvTitle"
+        style="@style/TextColor"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="15dp"
         android:fontFamily="@font/urbanist_bold"
-        style="@style/TextColor"
         android:textSize="30sp"
-        app:layout_constraintStart_toStartOf="@+id/picFood"
+        android:layout_marginHorizontal="8dp"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/picFood" />
 
     <TextView
@@ -48,7 +49,7 @@
         android:fontFamily="@font/urbanist_regular"
         style="@style/TextColor"
         android:textSize="15sp"
-        android:layout_marginTop="12dp"
+        android:layout_marginTop="10dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/tvTitle" />
@@ -57,7 +58,7 @@
         android:id="@+id/linearLayout3"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
+        android:layout_marginTop="15dp"
         android:gravity="center"
         android:orientation="horizontal"
         app:layout_constraintEnd_toEndOf="parent"
@@ -69,7 +70,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:background="@drawable/add_and_remove_background"
-            android:padding="15dp"
+            android:padding="12dp"
             android:src="@drawable/round_remove_icon"
             app:layout_constraintTop_toBottomOf="@+id/tvDescription"/>
 
@@ -89,7 +90,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:background="@drawable/add_and_remove_background"
-            android:padding="15dp"
+            android:padding="12dp"
             android:src="@drawable/round_add_icon"
             app:layout_constraintTop_toBottomOf="@+id/tvDescription" />
     </LinearLayout>

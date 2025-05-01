@@ -3,9 +3,9 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/main"
+    style="@style/ScreenBackground"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    style="@style/ScreenBackground"
     tools:context=".ui.view.activity.NowPlayingDetailActivity">
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -18,12 +18,12 @@
 
         <ImageView
             android:id="@+id/btnBack"
+            style="@style/TextColor"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:padding="10dp"
-            style="@style/TextColor"
             android:src="@drawable/back_icon"
             android:textStyle="bold"
             app:layout_constraintStart_toStartOf="parent"
@@ -31,12 +31,12 @@
 
         <ImageView
             android:id="@+id/btnShare"
+            style="@style/TextColor"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:padding="10dp"
-            style="@style/TextColor"
             android:src="@drawable/share_icon"
             android:textStyle="bold"
             app:layout_constraintEnd_toStartOf="@id/btnMore"
@@ -44,12 +44,12 @@
 
         <ImageView
             android:id="@+id/btnMore"
+            style="@style/TextColor"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:padding="10dp"
-            style="@style/TextColor"
             android:src="@drawable/more_icon"
             android:textStyle="bold"
             app:layout_constraintEnd_toEndOf="parent"
@@ -99,10 +99,10 @@
 
                     <TextView
                         android:id="@+id/tvTitle"
+                        style="@style/TextColor"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:text="THE MARVELS"
-                        style="@style/TextColor"
                         android:textSize="25sp"
                         android:textStyle="bold" />
 
@@ -120,30 +120,27 @@
 
                             <TextView
                                 android:id="@+id/textView10"
+                                style="@style/TextColor"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:layout_weight="1"
                                 android:gravity="start"
-                                android:text="Duration"
-                                style="@style/TextColor"
-                                 />
+                                android:text="Duration" />
 
                             <TextView
                                 android:id="@+id/textView18"
+                                style="@style/TextColor"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:gravity="end"
-                                style="@style/TextColor"
-                                android:text=": "
-                                 />
+                                android:text=": " />
                         </LinearLayout>
 
                         <TextView
                             android:id="@+id/tvDuration"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
                             style="@style/TextColor"
-                             />
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content" />
                     </LinearLayout>
 
                     <LinearLayout
@@ -159,30 +156,27 @@
 
                             <TextView
                                 android:id="@+id/textView12"
+                                style="@style/TextColor"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:layout_weight="1"
-                                style="@style/TextColor"
                                 android:gravity="start"
-                                android:text="Director"
-                                 />
+                                android:text="Director" />
 
                             <TextView
                                 android:id="@+id/textView19"
+                                style="@style/TextColor"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:gravity="end"
-                                style="@style/TextColor"
-                                android:text=": "
-                                 />
+                                android:text=": " />
                         </LinearLayout>
 
                         <TextView
                             android:id="@+id/tvDirectorName"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
                             style="@style/TextColor"
-                             />
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content" />
                     </LinearLayout>
 
                     <LinearLayout
@@ -199,22 +193,20 @@
 
                             <TextView
                                 android:id="@+id/textView16"
+                                style="@style/TextColor"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:layout_gravity="center_vertical"
                                 android:layout_weight="1"
-                                style="@style/TextColor"
-                                android:text="AR"
-                                 />
+                                android:text="AR" />
 
                             <TextView
                                 android:id="@+id/textView20"
+                                style="@style/TextColor"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:layout_gravity="center_vertical"
-                                style="@style/TextColor"
-                                android:text=": "
-                                 />
+                                android:text=": " />
                         </LinearLayout>
 
                         <TextView
@@ -242,41 +234,38 @@
 
                             <TextView
                                 android:id="@+id/textView14"
+                                style="@style/TextColor"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:layout_weight="1"
                                 android:gravity="start"
-                                style="@style/TextColor"
-                                android:text="Genre"
-                                 />
+                                android:text="Genre" />
 
                             <TextView
                                 android:id="@+id/textView21"
+                                style="@style/TextColor"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:gravity="end"
-                                style="@style/TextColor"
-                                android:text=": "
-                                 />
+                                android:text=": " />
                         </LinearLayout>
 
                         <TextView
                             android:id="@+id/tvGenre"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
                             style="@style/TextColor"
-                             />
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content" />
                     </LinearLayout>
                 </LinearLayout>
             </LinearLayout>
 
             <TextView
+                style="@style/TextColor"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="15dp"
                 android:layout_marginTop="20dp"
                 android:text="Watch Trailer"
-                style="@style/TextColor"
                 android:textSize="17sp"
                 android:textStyle="bold" />
 
@@ -320,56 +309,54 @@
             </androidx.cardview.widget.CardView>
 
 
-
             <TextView
+                style="@style/TextColor"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="15dp"
                 android:layout_marginTop="20dp"
                 android:text="Synopsis"
-                style="@style/TextColor"
                 android:textSize="17sp"
                 android:textStyle="bold" />
 
             <TextView
                 android:id="@+id/tvSynopsis"
+                style="@style/TextColor"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="15dp"
-                style="@style/TextColor"
-                android:layout_marginTop="15dp"/>
+                android:layout_marginTop="15dp" />
 
             <TextView
+                style="@style/TextColor"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="15dp"
                 android:layout_marginTop="20dp"
                 android:text="Cast"
-                style="@style/TextColor"
                 android:textSize="17sp"
                 android:textStyle="bold" />
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/rcvCast"
+                style="@style/ScreenBackground"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="15dp"
                 android:clipToPadding="false"
                 android:orientation="vertical"
                 android:paddingHorizontal="10dp"
-                style="@style/ScreenBackground"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/textView7"
-                tools:listitem="@layout/cast_item" />
+                app:layout_constraintTop_toBottomOf="@+id/textView7" />
 
             <TextView
+                style="@style/TextColor"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="15dp"
                 android:layout_marginTop="10dp"
                 android:text="Rating"
-                style="@style/TextColor"
                 android:textSize="17sp"
                 android:textStyle="bold" />
 
@@ -379,17 +366,18 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:layout_marginHorizontal="15dp"
+                android:layout_marginTop="15dp"
                 android:orientation="horizontal"
                 app:layout_constraintTop_toBottomOf="@+id/linearLayout2">
 
                 <TextView
                     android:id="@+id/tvRating"
+                    style="@style/TextColor"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
                     android:layout_weight="1"
-                    style="@style/TextColor"
-                    android:textSize="50sp"
+                    android:textSize="40sp"
                     android:textStyle="bold" />
 
                 <RatingBar
@@ -407,12 +395,10 @@
 
                 <TextView
                     android:id="@+id/tvReviewer"
+                    style="@style/TextColor"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    style="@style/TextColor"
-                    android:text="(2.4k reviewer)"
-                     />
+                    android:layout_weight="1" />
             </LinearLayout>
 
             <androidx.appcompat.widget.AppCompatButton

@@ -1,48 +1,44 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    style="@style/ScreenBackground"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:paddingVertical="15dp"
-    style="@style/ScreenBackground">
+    android:layout_marginHorizontal="15dp"
+    android:layout_marginVertical="10dp">
 
-
-    <ImageButton
+    <ImageView
         android:id="@+id/btnFavorite"
+        style="@style/TextColor"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:background="?attr/selectableItemBackgroundBorderless"
-        android:src="@drawable/star_filled_icon"
-        android:layout_marginStart="20dp"
-        style="@style/TextColor"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <TextView
-        android:id="@+id/tvCinemaName"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textSize="18sp"
-        android:textStyle="bold"
-        style="@style/TextColor"
-        android:layout_marginStart="15dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/btnFavorite"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <ImageButton
-        android:id="@+id/btnNext"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:background="?attr/selectableItemBackgroundBorderless"
-        style="@style/TextColor"
-        android:src="@drawable/next_icon"
-        android:text="Button"
+        android:layout_gravity="left"
         android:layout_marginEnd="20dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:srcCompat="@drawable/star_filled_icon" />
 
+    <LinearLayout
+        android:id="@+id/btnCinema"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="horizontal"
+        app:layout_constraintBottom_toBottomOf="@+id/btnFavorite"
+        app:layout_constraintStart_toEndOf="@id/btnFavorite"
+        app:layout_constraintTop_toTopOf="@+id/btnFavorite">
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+        <TextView
+            android:id="@+id/tvCinemaName"
+            style="@style/TextColor"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:layout_weight="1"
+            android:fontFamily="@font/urbanist_bold" />
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:src="@drawable/next_icon" />
+    </LinearLayout>
+</LinearLayout>
