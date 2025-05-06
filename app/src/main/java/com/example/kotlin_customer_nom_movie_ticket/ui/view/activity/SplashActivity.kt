@@ -28,21 +28,14 @@ class SplashActivity : AppCompatActivity() {
         binding = ActivitySplashBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        binding.lottieAnimationView.playAnimation()
-
-        Handler(Looper.getMainLooper()).postDelayed({
-            startNextActivity()
-        }, INTRO_DISPLAY_TIME.toLong())
+        startNextActivity()
     }
     private fun startNextActivity() {
         val intent = Intent(this, IntroActivity::class.java)
         startActivity(intent)
         finish()
     }
-
     override fun onDestroy() {
         super.onDestroy()
-        binding.lottieAnimationView.cancelAnimation()
     }
-
 }

@@ -378,7 +378,6 @@ class FoodAndDrinkActivity : AppCompatActivity() {
         val btnAdd = dialog.findViewById<ImageView>(R.id.btnAdd)
         val btnCancel = dialog.findViewById<Button>(R.id.btnCancel)
         val btnContinue = dialog.findViewById<Button>(R.id.btnContinue)
-        val etNote = dialog.findViewById<EditText>(R.id.etNote)
         quantity = 1
         Glide.with(dialog.context).load(img).into(picFood!!)
         tvTitle?.text = title

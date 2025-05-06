@@ -69,12 +69,10 @@ class SeatAdapter(
                     val seat = seatList[position]
                     val userId = seatViewModel.getSeatBookingUserId(seat.seat_id)
                     if (seat.status == "reserved" && userId == currentUserId && selectedPositions.contains(position)) {
-                        // Hủy chọn ghế reserved của currentUserId
                         selectedPositions.remove(position)
                         onClickItem?.invoke(seatList, position)
                         notifyItemChanged(position)
                     } else if (seat.status == "available" && selectedPositions.size < MAX_SEATS) {
-                        // Chọn ghế available
                         selectedPositions.add(position)
                         onClickItem?.invoke(seatList, position)
                         notifyItemChanged(position)
@@ -139,5 +137,9 @@ class SeatAdapter(
             }
         }
         notifyDataSetChanged()
+    }
+
+    fun getAllSeats(): List<Seat> {
+        return seatList
     }
 }

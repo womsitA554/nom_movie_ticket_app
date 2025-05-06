@@ -68,18 +68,15 @@ class NowPlayingDetailActivity : AppCompatActivity() {
         val movieQuantityVote = intent.getIntExtra("quantity_vote", 0)
         val movieBanner = intent.getStringExtra("banner")
 
-        // Lấy tên đạo diễn
         if (movieDirectorId != null) {
             directorViewModel.fetchDirectorNameById(movieDirectorId)
         } else {
-            Toast.makeText(this, "Không có ID đạo diễn", Toast.LENGTH_SHORT).show()
         }
 
         directorViewModel.directorName.observe(this) { name ->
             binding.tvDirectorName.text = name
         }
 
-        // Cập nhật UI
         binding.tvTitle.text = movieTitle
         binding.tvAgeRate.text = movieAgeRating
         binding.tvDuration.text = "$movieDuration minutes"
@@ -156,14 +153,12 @@ class NowPlayingDetailActivity : AppCompatActivity() {
         if (userId != null) {
             ticketViewModel.fetchBookings(userId)
         } else {
-            Toast.makeText(this, "Vui lòng đăng nhập để đánh giá", Toast.LENGTH_SHORT).show()
         }
     }
 
     private fun checkRatingEligibility(movieId: String) {
         val userId = FirebaseAuth.getInstance().currentUser?.uid
         if (userId == null) {
-            Toast.makeText(this, "Vui lòng đăng nhập để đánh giá", Toast.LENGTH_SHORT).show()
             bottomSheetCanNotRate()
             return
         }
@@ -171,7 +166,6 @@ class NowPlayingDetailActivity : AppCompatActivity() {
         ticketViewModel.passedBookings.observe(this) { bookings ->
             val relevantBooking = bookings?.find { it.movie_id == movieId }
             if (relevantBooking == null) {
-                Toast.makeText(this, "Bạn chưa xem phim này, không thể đánh giá", Toast.LENGTH_SHORT).show()
                 bottomSheetCanNotRate()
             } else {
                 bottomSheetRate(movieId)
@@ -189,7 +183,6 @@ class NowPlayingDetailActivity : AppCompatActivity() {
     private fun bottomSheetRate(movieId: String) {
         val userId = FirebaseAuth.getInstance().currentUser?.uid
         if (userId == null) {
-            Toast.makeText(this, "Vui lòng đăng nhập để đánh giá", Toast.LENGTH_SHORT).show()
             return
         }
 
@@ -198,11 +191,8 @@ class NowPlayingDetailActivity : AppCompatActivity() {
 
         userRatingRef.get().addOnSuccessListener { snapshot ->
             if (snapshot.exists()) {
-                // User has already rated
-                Toast.makeText(this, "Bạn đã đánh giá phim này rồi", Toast.LENGTH_SHORT).show()
                 bottomSheetAlreadyRated()
             } else {
-                // Show rating dialog
                 val dialog = BottomSheetDialog(this)
                 dialog.setContentView(R.layout.bottom_sheet_show_rate)
                 dialog.show()
@@ -252,7 +242,6 @@ class NowPlayingDetailActivity : AppCompatActivity() {
                 btnRateNow?.setOnClickListener {
                     val userRating = calculateTotalRating(ratingBar1, ratingBar2)
                     if (userRating == 0) {
-                        Toast.makeText(this@NowPlayingDetailActivity, "Vui lòng chọn đánh giá", Toast.LENGTH_SHORT).show()
                         return@setOnClickListener
                     }
 
@@ -278,10 +267,8 @@ class NowPlayingDetailActivity : AppCompatActivity() {
 
                         override fun onComplete(error: DatabaseError?, committed: Boolean, currentData: DataSnapshot?) {
                             if (error != null) {
-                                Toast.makeText(this@NowPlayingDetailActivity, "Lỗi khi gửi đánh giá: ${error.message}", Toast.LENGTH_SHORT).show()
                             } else if (committed) {
                                 userRatingRef.setValue(userRating).addOnSuccessListener {
-                                    Toast.makeText(this@NowPlayingDetailActivity, "Đánh giá thành công!", Toast.LENGTH_SHORT).show()
                                     val newAverageRating = currentData?.child("average_rating")?.getValue(Float::class.java) ?: 0f
                                     val movieQuantityVote = currentData?.child("total_votes")?.getValue(Int::class.java) ?: 0
                                     binding.tvRating.text = String.format("%.1f", newAverageRating)
@@ -290,17 +277,14 @@ class NowPlayingDetailActivity : AppCompatActivity() {
                                     dialog.dismiss()
                                     bottomSheetRateSuccess()
                                 }.addOnFailureListener {
-                                    Toast.makeText(this@NowPlayingDetailActivity, "Lỗi khi lưu đánh giá của bạn", Toast.LENGTH_SHORT).show()
                                 }
                             } else {
-                                Toast.makeText(this@NowPlayingDetailActivity, "Không thể gửi đánh giá", Toast.LENGTH_SHORT).show()
                             }
                         }
                     })
                 }
             }
         }.addOnFailureListener {
-            Toast.makeText(this, "Lỗi khi kiểm tra trạng thái đánh giá", Toast.LENGTH_SHORT).show()
         }
     }
     private fun calculateTotalRating(ratingBar1: RatingBar?, ratingBar2: RatingBar?): Int {

@@ -267,7 +267,7 @@ class ProfileFragment : Fragment() {
     private fun openNotificationSettings() {
         val intent = Intent().apply {
             when {
-                Build.VERSION.SDK_INT >= Build.VERSION_CODES.O -> {
+                true -> {
                     action = Settings.ACTION_APP_NOTIFICATION_SETTINGS
                     putExtra(Settings.EXTRA_APP_PACKAGE, requireContext().packageName)
                 }

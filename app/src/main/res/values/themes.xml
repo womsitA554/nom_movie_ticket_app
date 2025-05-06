@@ -11,6 +11,22 @@
         <item name="android:textColorPrimary">@color/black</item>
     </style>
 
+    <!-- Theme riêng cho SplashActivity -->
+    <style name="Theme.Kotlin_customer_nom_movie_ticket.Splash" parent="Theme.Material3.DayNight.NoActionBar">
+        <!-- Background cho splash screen -->
+        <item name="android:windowBackground">@drawable/splash_background</item>
+        <!-- Ẩn ActionBar -->
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+        <!-- Tùy chỉnh màu thanh trạng thái -->
+        <item name="android:statusBarColor">@color/orange</item>
+        <!-- Đảm bảo nội dung không bị cắt bởi thanh trạng thái -->
+        <item name="android:windowTranslucentStatus">false</item>
+        <item name="android:windowTranslucentNavigation">false</item>
+        <!-- Tắt light status bar để đồng bộ với màu orange -->
+        <item name="android:windowLightStatusBar" tools:targetApi="m">false</item>
+    </style>
+
     <style name="ScreenBackground"><item name="android:background">@color/white</item></style>
     <style name="TextColor"><item name="android:textColor">@color/black</item></style>
     <style name="viewColor"><item name="android:background">@color/light_grey</item></style>

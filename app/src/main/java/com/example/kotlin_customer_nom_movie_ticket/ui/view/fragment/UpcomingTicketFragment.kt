@@ -247,8 +247,7 @@ class UpcomingTicketFragment : Fragment() {
         binding.rcvUpcomingTicket.visibility = View.GONE
         binding.rcvUpcomingFood.visibility = View.GONE
         binding.progressBar.visibility = View.VISIBLE
-        binding.progressBar.playAnimation() // Bắt đầu animation
-        binding.layoutNotFoundTicket.visibility = View.GONE
+        binding.progressBar.playAnimation()
         Log.d("UpcomingTicketFragment", "fetchInitialData: isFetchingBookings=$isFetchingBookings, isFetchingFoodBookings=$isFetchingFoodBookings, customerId=$customerId")
         ticketViewModel.fetchBookings(customerId)
         ticketViewModel.fetchFoodBookings(customerId)
@@ -258,19 +257,17 @@ class UpcomingTicketFragment : Fragment() {
         val isLoading = ticketViewModel.isLoading.value
         Log.d("UpcomingTicketFragment", "updateUI: isMovieTabSelected=$isMovieTabSelected, isLoading=$isLoading, isFetching=$isFetching")
 
-        // Prioritize loading state
         if (isFetching || isLoading == true) {
             binding.rcvUpcomingTicket.visibility = View.GONE
             binding.rcvUpcomingFood.visibility = View.GONE
             binding.progressBar.visibility = View.VISIBLE
-            binding.progressBar.playAnimation() // Đảm bảo animation chạy khi hiển thị
+            binding.progressBar.playAnimation()
             binding.layoutNotFoundTicket.visibility = View.GONE
             Log.d("UpcomingTicketFragment", "Showing progressBar: isFetching=$isFetching, isLoading=$isLoading")
             return
         }
 
-        // Non-loading state
-        stopAnimation() // Dừng và ẩn progressBar
+        stopAnimation()
         if (isMovieTabSelected) {
             val bookings = ticketViewModel.upcomingBookings.value ?: emptyList()
             binding.rcvUpcomingTicket.visibility = if (bookings.isNotEmpty()) View.VISIBLE else View.GONE

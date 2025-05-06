@@ -361,7 +361,7 @@ class MainActivity : AppCompatActivity() {
             permissionCallback = callback
             requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
         } else {
-            callback?.invoke(true) // Android 11/12 không cần quyền
+            callback?.invoke(true)
         }
     }
 

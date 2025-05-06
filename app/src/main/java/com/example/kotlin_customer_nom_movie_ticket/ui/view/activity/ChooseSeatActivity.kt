@@ -10,6 +10,7 @@ import android.os.CountDownTimer
 import android.util.Log
 import android.view.View
 import android.widget.Button
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
@@ -99,7 +100,12 @@ class ChooseSeatActivity : AppCompatActivity() {
             val userIdFromBooking = seatViewModel.getSeatBookingUserId(seat.seat_id)
 
             if (isSelected && seat.status == "available") {
-                seatViewModel.updateSeatStatus(showtimeId!!, seat.seat_id, "reserved", userId) { success ->
+                seatViewModel.updateSeatStatus(
+                    showtimeId!!,
+                    seat.seat_id,
+                    "reserved",
+                    userId
+                ) { success ->
                     if (!success) {
                         seatAdapter.clearSelection()
                         Toast.makeText(this, "Failed to reserve seat", Toast.LENGTH_SHORT).show()
@@ -107,7 +113,12 @@ class ChooseSeatActivity : AppCompatActivity() {
                     Log.d("ChooseSeatActivity", "Reserved seat: ${seat.seat_id}")
                 }
             } else if (!isSelected && seat.status == "reserved" && userIdFromBooking == userId) {
-                seatViewModel.updateSeatStatus(showtimeId!!, seat.seat_id, "available", userId) { success ->
+                seatViewModel.updateSeatStatus(
+                    showtimeId!!,
+                    seat.seat_id,
+                    "available",
+                    userId
+                ) { success ->
                     if (success) {
                         lifecycleScope.launch {
                             cleanupTicketForSeat(seat.seat_id)
@@ -134,41 +145,48 @@ class ChooseSeatActivity : AppCompatActivity() {
 
         binding.btnContinue.setOnClickListener {
             if (seatAdapter.getSelectedSeatsCount() == 0) {
-                Toast.makeText(this, "Please select at least 1 seat", Toast.LENGTH_SHORT).show()
+                showChooseSeatFailDialog("Please select at least one seat")
+                return@setOnClickListener
             } else {
-                lifecycleScope.launch {
-                    createTickets(cinemaId!!)
-                    val intent = Intent(this@ChooseSeatActivity, FoodAndDrinkActivity::class.java)
-                    intent.putExtra("cinema_id", cinemaId)
-                    intent.putExtra("cinema_name", cinemaName)
-                    intent.putExtra("showtime_id", showtimeId)
-                    intent.putExtra("showtime_time", showtimeTime)
-                    intent.putExtra("total_price_seats", totalPrice)
-                    intent.putExtra("room_id", roomId)
-                    intent.putExtra("movie_id", movieId)
-                    intent.putExtra("country", movieCountry)
-                    intent.putExtra("title", movieTitle)
-                    intent.putExtra("poster_url", moviePosterUrl)
-                    intent.putExtra("language", movieLanguage)
-                    intent.putExtra("release_year", movieReleaseYear)
-                    intent.putExtra("duration", movieDuration)
-                    intent.putExtra("genre", movieGenre)
-                    intent.putExtra("synopsis", movieSynopsis)
-                    intent.putExtra("director_id", movieDirectorId)
-                    intent.putExtra("status", movieStatus)
-                    intent.putExtra("trailer_url", movieTrailerUrl)
-                    intent.putExtra("banner", movieBanner)
-                    intent.putExtra("age_rating", movieAgeRating)
-                    intent.putExtra("rating", movieRating)
-                    intent.putStringArrayListExtra("actor_ids", movieActorIds?.let { ArrayList(it) })
-                    intent.putExtra("seat_price", binding.tvPrice.text.toString())
-                    intent.putExtra("seat_name", binding.tvSeatQuantity.text)
-                    intent.putExtra("time_left", timeLeftInMillis)
-                    intent.putStringArrayListExtra("ticket_ids", ArrayList(ticketIds.keys.toList()))
-                    intent.putStringArrayListExtra("selected_seat_ids", ArrayList(selectedSeatId))
-                    Log.d("ChooseSeatActivity", "Selected seat ids: ${ArrayList(selectedSeatId)}")
-                    startActivityForResult(intent, REQUEST_CODE_FOOD)
-                    overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left)
+                val (isValid, errorMessage) = checkSeatSelectionValidity()
+                if (!isValid) {
+                    showChooseSeatFailDialog("Please do not leave 1 empty seats on the left or right of the seats you have selected.")
+                    return@setOnClickListener
+                } else {
+                    lifecycleScope.launch {
+                        createTickets(cinemaId!!)
+                        val intent = Intent(this@ChooseSeatActivity, FoodAndDrinkActivity::class.java)
+                        intent.putExtra("cinema_id", cinemaId)
+                        intent.putExtra("cinema_name", cinemaName)
+                        intent.putExtra("showtime_id", showtimeId)
+                        intent.putExtra("showtime_time", showtimeTime)
+                        intent.putExtra("total_price_seats", totalPrice)
+                        intent.putExtra("room_id", roomId)
+                        intent.putExtra("movie_id", movieId)
+                        intent.putExtra("country", movieCountry)
+                        intent.putExtra("title", movieTitle)
+                        intent.putExtra("poster_url", moviePosterUrl)
+                        intent.putExtra("language", movieLanguage)
+                        intent.putExtra("release_year", movieReleaseYear)
+                        intent.putExtra("duration", movieDuration)
+                        intent.putExtra("genre", movieGenre)
+                        intent.putExtra("synopsis", movieSynopsis)
+                        intent.putExtra("director_id", movieDirectorId)
+                        intent.putExtra("status", movieStatus)
+                        intent.putExtra("trailer_url", movieTrailerUrl)
+                        intent.putExtra("banner", movieBanner)
+                        intent.putExtra("age_rating", movieAgeRating)
+                        intent.putExtra("rating", movieRating)
+                        intent.putStringArrayListExtra("actor_ids", movieActorIds?.let { ArrayList(it) })
+                        intent.putExtra("seat_price", binding.tvPrice.text.toString())
+                        intent.putExtra("seat_name", binding.tvSeatQuantity.text)
+                        intent.putExtra("time_left", timeLeftInMillis)
+                        intent.putStringArrayListExtra("ticket_ids", ArrayList(ticketIds.keys.toList()))
+                        intent.putStringArrayListExtra("selected_seat_ids", ArrayList(selectedSeatId))
+                        Log.d("ChooseSeatActivity", "Selected seat ids: ${ArrayList(selectedSeatId)}")
+                        startActivityForResult(intent, REQUEST_CODE_FOOD)
+                        overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left)
+                    }
                 }
             }
         }
@@ -183,8 +201,8 @@ class ChooseSeatActivity : AppCompatActivity() {
     }
 
     private fun stopAnimation() {
-        binding.progressBar.cancelAnimation() // Dừng animation
-        binding.progressBar.visibility = View.GONE // Ẩn progressBar
+        binding.progressBar.cancelAnimation()
+        binding.progressBar.visibility = View.GONE
     }
 
     private fun setupRecycleView() {
@@ -192,10 +210,12 @@ class ChooseSeatActivity : AppCompatActivity() {
         binding.rcvSeat.apply {
             setHasFixedSize(true)
             layoutManager = GridLayoutManager(this@ChooseSeatActivity, 10)
-            binding.rcvSeat.addItemDecoration(GridSpacingItemDecoration(spaceInPixels))        }
+            binding.rcvSeat.addItemDecoration(GridSpacingItemDecoration(spaceInPixels))
+        }
     }
 
-    class GridSpacingItemDecoration(private val spaceInPixels: Int) : RecyclerView.ItemDecoration() {
+    class GridSpacingItemDecoration(private val spaceInPixels: Int) :
+        RecyclerView.ItemDecoration() {
         override fun getItemOffsets(
             outRect: Rect,
             view: View,
@@ -234,18 +254,26 @@ class ChooseSeatActivity : AppCompatActivity() {
                 Toast.makeText(this, "Failed to reset seats", Toast.LENGTH_SHORT).show()
             } else {
                 lifecycleScope.launch {
-                    Log.d("ResetAllSeats", "Starting to clean up tickets. ticketIds size: ${ticketIds.size}")
+                    Log.d(
+                        "ResetAllSeats",
+                        "Starting to clean up tickets. ticketIds size: ${ticketIds.size}"
+                    )
                     val dbTickets = FirebaseDatabase.getInstance().reference.child("Tickets")
                     try {
-                        // Xóa tất cả ticket trong một batch
                         val updates = mutableMapOf<String, Any?>()
                         ticketIds.forEach { (ticketId, seatId) ->
                             updates["$ticketId"] = null
-                            Log.d("ResetAllSeats", "Queuing ticket for deletion: ticketId=$ticketId, seatId=$seatId")
+                            Log.d(
+                                "ResetAllSeats",
+                                "Queuing ticket for deletion: ticketId=$ticketId, seatId=$seatId"
+                            )
                         }
                         dbTickets.updateChildren(updates).await()
                         ticketIds.clear()
-                        Log.d("ResetAllSeats", "Batch deleted tickets. Cleared ticketIds. New size: ${ticketIds.size}")
+                        Log.d(
+                            "ResetAllSeats",
+                            "Batch deleted tickets. Cleared ticketIds. New size: ${ticketIds.size}"
+                        )
                     } catch (e: Exception) {
                         Log.e("ResetAllSeats", "Error batch deleting tickets", e)
                     }
@@ -315,8 +343,10 @@ class ChooseSeatActivity : AppCompatActivity() {
             var shouldCreateNewTicket = true
 
             for (ticketSnapshot in existingTicketSnapshot.children) {
-                val existingShowtimeId = ticketSnapshot.child("showtime_id").getValue(String::class.java)
-                val paymentStatus = ticketSnapshot.child("payment_status").getValue(String::class.java)
+                val existingShowtimeId =
+                    ticketSnapshot.child("showtime_id").getValue(String::class.java)
+                val paymentStatus =
+                    ticketSnapshot.child("payment_status").getValue(String::class.java)
 
                 if (existingShowtimeId == showtimeId && paymentStatus == "Pending") {
                     ticketId = ticketSnapshot.key
@@ -355,13 +385,20 @@ class ChooseSeatActivity : AppCompatActivity() {
             Log.d("CleanupTicket", "Found ticket to remove: ticketId=$ticketId, seatId=$seatId")
             try {
                 val ticketSnapshot = dbTickets.child(ticketId).get().await()
-                val paymentStatus = ticketSnapshot.child("payment_status").getValue(String::class.java)
+                val paymentStatus =
+                    ticketSnapshot.child("payment_status").getValue(String::class.java)
                 if (paymentStatus == "Pending") {
                     dbTickets.child(ticketId).removeValue().await()
                     ticketIds.remove(ticketId)
-                    Log.d("CleanupTicket", "Successfully deleted pending ticket $ticketId for seat $seatId")
+                    Log.d(
+                        "CleanupTicket",
+                        "Successfully deleted pending ticket $ticketId for seat $seatId"
+                    )
                 } else {
-                    Log.d("CleanupTicket", "Ticket $ticketId for seat $seatId is not Pending (status: $paymentStatus), skipping deletion")
+                    Log.d(
+                        "CleanupTicket",
+                        "Ticket $ticketId for seat $seatId is not Pending (status: $paymentStatus), skipping deletion"
+                    )
                 }
             } catch (e: Exception) {
                 Log.e("CleanupTicket", "Error deleting ticket $ticketId for seat $seatId", e)
@@ -371,7 +408,12 @@ class ChooseSeatActivity : AppCompatActivity() {
         }
     }
 
-    private suspend fun pricePerSeat(cinemaId:String, movieId: String, seatType:String, showtimeTime: String) : Double?{
+    private suspend fun pricePerSeat(
+        cinemaId: String,
+        movieId: String,
+        seatType: String,
+        showtimeTime: String
+    ): Double? {
         val db = FirebaseDatabase.getInstance().reference
         val snapshot = db.child("TicketPrices")
             .orderByChild("cinema_id")
@@ -400,14 +442,21 @@ class ChooseSeatActivity : AppCompatActivity() {
             val priceCinemaId = priceSnapshot.child("cinema_id").getValue(String::class.java)
             val priceMovieId = priceSnapshot.child("movie_id").getValue(String::class.java)
             val priceSeatType = priceSnapshot.child("seat_type").getValue(String::class.java)
-            val priceIsWeekend = priceSnapshot.child("is_weekend").getValue(Boolean::class.java) ?: false
+            val priceIsWeekend =
+                priceSnapshot.child("is_weekend").getValue(Boolean::class.java) ?: false
             val priceTimeRange = priceSnapshot.child("time_range").getValue(String::class.java)
             val price = priceSnapshot.child("price").getValue(Double::class.java)
 
-            Log.d("PricePerSeat", "cinemaId=$cinemaId, movieId=$movieId, seatType=$seatType, isWeekend=$isWeekend, timeRange=$timeRange, price=$price")
+            Log.d(
+                "PricePerSeat",
+                "cinemaId=$cinemaId, movieId=$movieId, seatType=$seatType, isWeekend=$isWeekend, timeRange=$timeRange, price=$price"
+            )
 
             if (price == null) {
-                Log.e("PricePerSeat", "No price found for cinemaId=$cinemaId, movieId=$movieId, seatType=$seatType, isWeekend=$isWeekend, timeRange=$timeRange")
+                Log.e(
+                    "PricePerSeat",
+                    "No price found for cinemaId=$cinemaId, movieId=$movieId, seatType=$seatType, isWeekend=$isWeekend, timeRange=$timeRange"
+                )
                 return 0.0
             }
 
@@ -422,6 +471,69 @@ class ChooseSeatActivity : AppCompatActivity() {
         }
 
         return null
+    }
+
+    private fun checkSeatSelectionValidity(): Pair<Boolean, String> {
+        val allSeats = seatAdapter.getAllSeats()
+        val rows = ('A'..'J').toList()
+
+        for (row in rows) {
+            val seat1 = allSeats.find { it.row_number == row.toString() && it.seat_number == "1" }
+            val seat2 = allSeats.find { it.row_number == row.toString() && it.seat_number == "2" }
+            val seat9 = allSeats.find { it.row_number == row.toString() && it.seat_number == "9" }
+            val seat10 = allSeats.find { it.row_number == row.toString() && it.seat_number == "10" }
+
+            if (seat1?.status == "available" && seat2?.status in listOf("reserved", "booked")) {
+                return Pair(false, "")
+            }
+
+            if (seat10?.status == "available" && seat9?.status in listOf("reserved", "booked")) {
+                return Pair(false, "")
+            }
+        }
+
+        for (row in rows) {
+            val seatsInRow = allSeats.filter { it.row_number == row.toString() }
+                .sortedBy { it.seat_number.toInt() }
+            val reservedOrBookedSeats = seatsInRow.filter { it.status in listOf("reserved", "booked") }
+
+            if (reservedOrBookedSeats.size >= 2) {
+                for (i in 0 until reservedOrBookedSeats.size - 1) {
+                    val firstSeat = reservedOrBookedSeats[i]
+                    val secondSeat = reservedOrBookedSeats[i + 1]
+                    val firstSeatNumber = firstSeat.seat_number.toInt()
+                    val secondSeatNumber = secondSeat.seat_number.toInt()
+
+                    val gapSize = secondSeatNumber - firstSeatNumber - 1
+                    if (gapSize == 1) {
+                        val middleSeatNumber = firstSeatNumber + 1
+                        val middleSeat = seatsInRow.find { it.seat_number == middleSeatNumber.toString() }
+                        if (middleSeat?.status == "available") {
+                            return Pair(false, "")
+                        }
+                    }
+                }
+            }
+        }
+
+        return Pair(true, "Valid selection")
+    }
+
+    private fun showChooseSeatFailDialog(message :String) {
+        val dialog = Dialog(this)
+        dialog.setContentView(R.layout.dialog_choose_seat)
+        dialog.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+        dialog.setCancelable(false)
+
+        val btnClose = dialog.findViewById<Button>(R.id.btnClose)
+        val tvError = dialog.findViewById<TextView>(R.id.tvError)
+
+        tvError.text = message
+        btnClose.setOnClickListener {
+            dialog.dismiss()
+        }
+
+        dialog.show()
     }
 
     override fun onDestroy() {
@@ -442,10 +554,12 @@ class ChooseSeatActivity : AppCompatActivity() {
                 RESULT_OK -> {
                     finish()
                 }
+
                 RESULT_CANCELED -> {
                     resetAllSeats()
                     finish()
                 }
+
                 RESULT_FIRST_USER -> {
 
                 }

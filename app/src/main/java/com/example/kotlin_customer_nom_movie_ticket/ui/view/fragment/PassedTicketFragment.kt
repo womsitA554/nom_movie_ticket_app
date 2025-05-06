@@ -39,6 +39,9 @@ class PassedTicketFragment : Fragment() {
     private lateinit var customerId: String
     private var isFetching = true
 
+    private var isFetchingBookings = false
+    private var isFetchingFoodBookings = false
+
     private val paymentSuccessReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             isFetching = true
@@ -63,7 +66,7 @@ class PassedTicketFragment : Fragment() {
         binding.rcvPassedTicket.visibility = View.GONE
         binding.rcvPassedFood.visibility = View.GONE
         binding.progressBar.visibility = View.VISIBLE
-        binding.progressBar.playAnimation() // Bắt đầu animation
+        binding.progressBar.playAnimation()
         binding.layoutNotFoundTicket.visibility = View.GONE
         isMovieTabSelected = true
         isFetching = true
@@ -117,25 +120,31 @@ class PassedTicketFragment : Fragment() {
         ticketViewModel.passedBookings.observe(viewLifecycleOwner) { bookings ->
             adapter.updateData(bookings.toMutableList())
             isFetching = false
-            binding.layoutNotFoundTicket.visibility = if (bookings.isEmpty() && isMovieTabSelected) View.VISIBLE else View.GONE
-            updateUI()
             Log.d("PassedTicketFragment", "Updated passed bookings: ${bookings.size}")
+            if (!isFetchingBookings && !isFetchingFoodBookings) {
+                isFetching = false
+                updateUI()
+            }
         }
 
         ticketViewModel.passedFoodBookings.observe(viewLifecycleOwner) { foodBookings ->
             foodAdapter.updateData(foodBookings)
             isFetching = false
-            binding.layoutNotFoundTicket.visibility = if (foodBookings.isEmpty() && !isMovieTabSelected) View.VISIBLE else View.GONE
-            updateUI()
             Log.d("PassedTicketFragmentFood", "Updated passed food bookings: ${foodBookings.size}")
+            if (!isFetchingBookings && !isFetchingFoodBookings) {
+                isFetching = false
+                updateUI()
+            }
         }
 
         ticketViewModel.error.observe(viewLifecycleOwner) { error ->
             error?.let {
+                isFetchingBookings = false
+                isFetchingFoodBookings = false
                 isFetching = false
                 Toast.makeText(requireContext(), it, Toast.LENGTH_SHORT).show()
                 Log.e("PassedTicketFragment", "Error: $it")
-                stopAnimation() // Dừng và ẩn progressBar khi có lỗi
+                stopAnimation()
                 binding.layoutNotFoundTicket.visibility = View.VISIBLE
             }
         }
@@ -146,8 +155,8 @@ class PassedTicketFragment : Fragment() {
     }
 
     private fun stopAnimation() {
-        binding.progressBar.cancelAnimation() // Dừng animation
-        binding.progressBar.visibility = View.GONE // Ẩn progressBar
+        binding.progressBar.cancelAnimation()
+        binding.progressBar.visibility = View.GONE
     }
 
     private fun setupTabButtons(isDarkMode: Boolean) {
@@ -189,11 +198,12 @@ class PassedTicketFragment : Fragment() {
     }
 
     private fun fetchInitialData() {
-        isFetching = true
+        isFetchingBookings = true
+        isFetchingFoodBookings = true
         binding.rcvPassedTicket.visibility = View.GONE
         binding.rcvPassedFood.visibility = View.GONE
         binding.progressBar.visibility = View.VISIBLE
-        binding.progressBar.playAnimation() // Bắt đầu animation
+        binding.progressBar.playAnimation()
         binding.layoutNotFoundTicket.visibility = View.GONE
         ticketViewModel.fetchBookings(customerId)
         ticketViewModel.fetchFoodBookings(customerId)
@@ -201,12 +211,14 @@ class PassedTicketFragment : Fragment() {
     }
 
     private fun updateUI() {
+        val isLoading = ticketViewModel.isLoading.value
         Log.d("PassedTicketFragment", "Updating UI, isMovieTabSelected: $isMovieTabSelected, isFetching: $isFetching")
-        if (isFetching || ticketViewModel.isLoading.value == true) {
+
+        if (isFetching || isLoading == true) {
             binding.rcvPassedTicket.visibility = View.GONE
             binding.rcvPassedFood.visibility = View.GONE
             binding.progressBar.visibility = View.VISIBLE
-            binding.progressBar.playAnimation() // Đảm bảo animation chạy khi hiển thị
+            binding.progressBar.playAnimation()
             binding.layoutNotFoundTicket.visibility = View.GONE
             return
         }
