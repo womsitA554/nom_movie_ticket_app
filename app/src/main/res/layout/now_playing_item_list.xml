@@ -39,7 +39,7 @@
         android:gravity="center"
         android:paddingHorizontal="16dp"
         android:paddingVertical="8dp"
-        android:text="Book Now"
+        android:text="Đặt vé"
         android:textColor="@color/orange"
         android:textSize="11sp"
         android:textStyle="bold"

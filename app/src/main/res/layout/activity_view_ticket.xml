@@ -17,7 +17,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
-        <ImageButton
+        <ImageView
             android:id="@+id/btnBack"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -35,7 +35,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:fontFamily="@font/urbanist_bold"
-            android:text="Review Summary"
+            android:text="Vé"
             android:textColor="@color/white"
             android:textSize="23sp"
             android:textStyle="bold"
@@ -85,7 +85,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_margin="25dp"
-            android:layout_marginBottom="70dp"
+            android:layout_marginBottom="78dp"
             android:background="@drawable/ticket_background"
             android:orientation="vertical">
 
@@ -130,7 +130,7 @@
 
 
                         <LinearLayout
-                            android:layout_width="70dp"
+                            android:layout_width="78dp"
                             android:layout_height="match_parent"
                             android:orientation="horizontal">
 
@@ -141,7 +141,7 @@
                                 android:layout_weight="1"
                                 android:fontFamily="@font/urbanist_regular"
                                 android:gravity="start"
-                                android:text="Durtion"
+                                android:text="Thời lượng"
                                 android:textColor="@color/black" />
 
                             <TextView
@@ -168,7 +168,7 @@
                         android:orientation="horizontal">
 
                         <LinearLayout
-                            android:layout_width="70dp"
+                            android:layout_width="78dp"
                             android:layout_height="match_parent"
                             android:orientation="horizontal">
 
@@ -179,7 +179,7 @@
                                 android:layout_weight="1"
                                 android:fontFamily="@font/urbanist_regular"
                                 android:gravity="start"
-                                android:text="Director"
+                                android:text="Đạo diễn"
                                 android:textColor="@color/black" />
 
                             <TextView
@@ -206,7 +206,7 @@
                         android:orientation="horizontal">
 
                         <LinearLayout
-                            android:layout_width="70dp"
+                            android:layout_width="78dp"
                             android:layout_height="match_parent"
                             android:layout_gravity="center_vertical"
                             android:orientation="horizontal">
@@ -218,7 +218,7 @@
                                 android:layout_gravity="center_vertical"
                                 android:layout_weight="1"
                                 android:fontFamily="@font/urbanist_regular"
-                                android:text="Rated"
+                                android:text="Kiểm duyệt"
                                 android:textColor="@color/black" />
 
                             <TextView
@@ -250,7 +250,7 @@
                         android:orientation="horizontal">
 
                         <LinearLayout
-                            android:layout_width="70dp"
+                            android:layout_width="78dp"
                             android:layout_height="match_parent"
                             android:orientation="horizontal">
 
@@ -261,7 +261,7 @@
                                 android:layout_weight="1"
                                 android:fontFamily="@font/urbanist_regular"
                                 android:gravity="start"
-                                android:text="Genre"
+                                android:text="Thể loại"
                                 android:textColor="@color/black" />
 
                             <TextView
@@ -393,7 +393,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:fontFamily="@font/urbanist_bold"
-                        android:text="Seats"
+                        android:text="Ghế"
                         android:textAlignment="center"
                         android:textColor="@color/black" />
 
@@ -429,7 +429,7 @@
                     android:layout_gravity="center"
                     android:layout_marginStart="5dp"
                     android:fontFamily="@font/urbanist_regular"
-                    android:text="Price:"
+                    android:text="Giá:"
                     android:textAlignment="center"
                     android:textColor="@color/black"
                     android:textSize="15sp" />
@@ -461,7 +461,7 @@
                     android:layout_gravity="center"
                     android:layout_marginStart="5dp"
                     android:fontFamily="@font/urbanist_regular"
-                    android:text="Cinema:"
+                    android:text="Rạp phim:"
                     android:textAlignment="center"
                     android:textColor="@color/black"
                     android:textSize="15sp" />
@@ -491,7 +491,7 @@
                     android:layout_gravity="center"
                     android:layout_marginStart="5dp"
                     android:fontFamily="@font/urbanist_regular"
-                    android:text="Projection Room: "
+                    android:text="Phòng chiếu: "
                     android:textAlignment="center"
                     android:textColor="@color/black"
                     android:textSize="15sp" />
@@ -521,7 +521,7 @@
                     android:layout_marginStart="5dp"
                     android:layout_marginTop="11dp"
                     android:fontFamily="@font/urbanist_regular"
-                    android:text="Show this QR code to the ticket counter to receive your ticket."
+                    android:text="Hiển thị mã QR này tại quầy bán vé để nhận vé."
                     android:textColor="@color/black"
                     android:textSize="15sp" />
             </LinearLayout>
@@ -556,7 +556,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:fontFamily="@font/urbanist_regular"
-                    android:text="Booking ID: "
+                    android:text="Mã đơn hàng:"
                     android:textColor="@color/black" />
 
                 <TextView

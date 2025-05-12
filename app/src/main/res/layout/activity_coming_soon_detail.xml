@@ -15,7 +15,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
-        <ImageButton
+        <ImageView
             android:id="@+id/btnBack"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -101,7 +101,6 @@
                         android:id="@+id/tvTitle"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="THE MARVELS"
                         style="@style/TextColor"
                         android:textSize="25sp"
                         android:textStyle="bold" />
@@ -114,7 +113,7 @@
 
 
                         <LinearLayout
-                            android:layout_width="70dp"
+                            android:layout_width="78dp"
                             android:layout_height="match_parent"
                             android:orientation="horizontal">
 
@@ -124,7 +123,7 @@
                                 android:layout_height="wrap_content"
                                 android:layout_weight="1"
                                 android:gravity="start"
-                                android:text="Duration"
+                                android:text="Thời lượng"
                                 style="@style/TextColor" />
 
                             <TextView
@@ -150,7 +149,7 @@
                         android:orientation="horizontal">
 
                         <LinearLayout
-                            android:layout_width="70dp"
+                            android:layout_width="78dp"
                             android:layout_height="match_parent"
                             android:orientation="horizontal">
 
@@ -160,7 +159,7 @@
                                 android:layout_height="wrap_content"
                                 android:layout_weight="1"
                                 android:gravity="start"
-                                android:text="Director"
+                                android:text="Đạo diễn"
                                 style="@style/TextColor" />
 
                             <TextView
@@ -186,7 +185,7 @@
                         android:orientation="horizontal">
 
                         <LinearLayout
-                            android:layout_width="70dp"
+                            android:layout_width="78dp"
                             android:layout_height="match_parent"
                             android:layout_gravity="center_vertical"
                             android:orientation="horizontal">
@@ -197,7 +196,7 @@
                                 android:layout_height="wrap_content"
                                 android:layout_gravity="center_vertical"
                                 android:layout_weight="1"
-                                android:text="AR"
+                                android:text="Kiểm duyệt"
                                 style="@style/TextColor" />
 
                             <TextView
@@ -228,7 +227,7 @@
                         android:orientation="horizontal">
 
                         <LinearLayout
-                            android:layout_width="70dp"
+                            android:layout_width="78dp"
                             android:layout_height="match_parent"
                             android:orientation="horizontal">
 
@@ -238,7 +237,7 @@
                                 android:layout_height="wrap_content"
                                 android:layout_weight="1"
                                 android:gravity="start"
-                                android:text="Genre"
+                                android:text="Thể loại"
                                 style="@style/TextColor" />
 
                             <TextView
@@ -282,7 +281,7 @@
                     android:id="@+id/favorite_text"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Watchlist"
+                    android:text="Danh sách theo dõi"
                     android:textStyle="bold"
                     style="@style/TextColor"
                     android:layout_marginStart="10dp" />
@@ -292,7 +291,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Watch Trailer"
+                android:text="Xem Trailer"
                 android:textSize="17sp"
                 android:textStyle="bold"
                 style="@style/TextColor"
@@ -341,7 +340,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Synopsis"
+                android:text="Tóm tắt"
                 android:textSize="17sp"
                 android:textStyle="bold"
                 style="@style/TextColor"
@@ -361,7 +360,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="15dp"
                 android:layout_marginTop="20dp"
-                android:text="Cast"
+                android:text="Dàn diễn viên"
                 style="@style/TextColor"
                 android:textSize="17sp"
                 android:textStyle="bold" />
@@ -376,8 +375,7 @@
                 android:paddingHorizontal="10dp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/textView7"
-                tools:listitem="@layout/cast_item" />
+                app:layout_constraintTop_toBottomOf="@+id/textView7"/>
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
 </androidx.constraintlayout.widget.ConstraintLayout>

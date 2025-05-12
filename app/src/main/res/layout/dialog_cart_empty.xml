@@ -21,7 +21,7 @@
             android:layout_marginTop="8dp"
             android:layout_marginBottom="16dp"
             android:fontFamily="@font/urbanist_bold"
-            android:text="Cart Empty"
+            android:text="Giỏ hàng trống"
             style="@style/TextColor"
             android:textSize="16sp" />
 
@@ -34,7 +34,7 @@
             android:gravity="center"
             android:layout_marginBottom="16dp"
             android:fontFamily="@font/urbanist_regular"
-            android:text="Please return to the food page to update your cart."
+            android:text="Vui lòng quay lại trang đồ ăn để cập nhật giỏ hàng của bạn."
             style="@style/TextColor"
             android:textSize="15sp" />
 

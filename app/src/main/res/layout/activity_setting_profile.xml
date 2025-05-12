@@ -25,7 +25,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:fontFamily="@font/urbanist_bold"
-        android:text="Personal Info"
+        android:text="Thông tin cá nhân"
         android:textSize="22sp"
         android:textStyle="bold"
         app:layout_constraintBottom_toBottomOf="@+id/btnBack"
@@ -61,7 +61,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:fontFamily="@font/urbanist_bold"
-        android:text="Full Name"
+        android:text="Họ và tên"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/picAvatar" />
 
@@ -73,7 +73,7 @@
         android:layout_marginTop="15dp"
         android:background="@drawable/edit_text_background"
         android:fontFamily="@font/urbanist_regular"
-        android:hint="Enter your full name"
+        android:hint="Nhập họ và tên của bạn"
         android:padding="15dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -87,7 +87,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="25dp"
         android:fontFamily="@font/urbanist_bold"
-        android:text="Phone Number"
+        android:text="Số điện thoại"
         app:layout_constraintStart_toStartOf="@+id/textView5"
         app:layout_constraintTop_toBottomOf="@+id/etName" />
 
@@ -99,7 +99,7 @@
         android:layout_marginTop="15dp"
         android:background="@drawable/edit_text_background"
         android:fontFamily="@font/urbanist_regular"
-        android:hint="Enter your phone number"
+        android:hint="Nhập số điện thoại của bạn"
         android:padding="15dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -126,7 +126,7 @@
         android:layout_marginTop="15dp"
         android:background="@drawable/edit_text_background"
         android:fontFamily="@font/urbanist_regular"
-        android:hint="Enter your email"
+        android:hint="Nhập email của bạn"
         android:padding="15dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -140,7 +140,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="30dp"
         android:fontFamily="@font/urbanist_bold"
-        android:text="Delete Account"
+        android:text="Xoá tài khoản"
         app:layout_constraintStart_toStartOf="@+id/etEmail"
         app:layout_constraintTop_toBottomOf="@+id/etEmail" />
 

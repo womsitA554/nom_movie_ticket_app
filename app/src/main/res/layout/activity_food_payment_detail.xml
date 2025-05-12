@@ -16,7 +16,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
-        <ImageButton
+        <ImageView
             android:id="@+id/btnBack"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -34,7 +34,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:fontFamily="@font/urbanist_bold"
-            android:text="Order Summary"
+            android:text="Chi tiết thanh toán"
             style="@style/TextColor"
             android:textSize="23sp"
             android:textStyle="bold"
@@ -172,7 +172,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginStart="10dp"
                         android:fontFamily="@font/urbanist_bold"
-                        android:text="Choose pick up time"
+                        android:text="Chọn thời gian nhận"
                         style="@style/TextColor"
                         android:textSize="17sp"
                         android:textStyle="bold" />
@@ -183,7 +183,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginStart="10dp"
                         android:fontFamily="@font/urbanist_regular"
-                        android:text="You need to choose your pick up time"
+                        android:text="Bạn cần chọn thời gian nhận"
                         android:textColor="@color/dark_grey"
                         android:textStyle="bold"
                         android:textSize="15sp" />
@@ -219,7 +219,7 @@
                     android:layout_marginStart="15dp"
                     android:layout_marginTop="12dp"
                     android:fontFamily="@font/urbanist_bold"
-                    android:text="Price Details"
+                    android:text="Chi tiết giá"
                     style="@style/TextColor"
                     android:textSize="17sp"
                     android:textStyle="bold" />
@@ -244,7 +244,7 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:fontFamily="@font/urbanist_regular"
-                        android:text="Total Price"
+                        android:text="Tổng giá"
                         style="@style/TextColor"
                         android:textStyle="bold" />
 
@@ -271,7 +271,7 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:fontFamily="@font/urbanist_regular"
-                        android:text="Service Fee"
+                        android:text="Phí tiện lợi"
                         style="@style/TextColor"
                         android:textStyle="bold" />
 
@@ -303,7 +303,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:fontFamily="@font/urbanist_regular"
-                            android:text="Point"
+                            android:text="Điểm"
                             style="@style/TextColor"
                             android:textStyle="bold" />
 
@@ -350,7 +350,7 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:fontFamily="@font/urbanist_regular"
-                        android:text="Actual Pay"
+                        android:text="Cần thanh toán"
                         style="@style/TextColor"
                         android:textStyle="bold" />
 
@@ -373,7 +373,7 @@
                 android:layout_marginStart="15dp"
                 android:layout_marginTop="30dp"
                 android:fontFamily="@font/urbanist_bold"
-                android:text="Promo or Vouchers"
+                android:text="Khuyến mãi hoặc Phiếu giảm giá"
                 style="@style/TextColor"
                 android:textSize="17sp"
                 android:textStyle="bold" />
@@ -395,7 +395,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Cinema Point"
+                    android:text="Điểm"
                     android:textSize="15sp"
                     android:layout_marginTop="2dp"
                     android:layout_gravity="top"
@@ -449,7 +449,7 @@
                 android:layout_marginTop="12dp"
                 android:background="@drawable/edit_text_background"
                 android:fontFamily="@font/urbanist_regular"
-                android:hint="Enter promo code or voucher"
+                android:hint="Nhập mã khuyến mại hoặc phiếu giảm giá"
                 android:padding="15dp" />
 
             <androidx.appcompat.widget.AppCompatButton
@@ -462,7 +462,7 @@
                 android:elevation="0dp"
                 android:layout_marginBottom="15dp"
                 android:letterSpacing="0.1"
-                android:text="Continue"
+                android:text="Tiếp tục"
                 android:textColor="@color/white"
                 android:textStyle="bold"
                 app:layout_constraintEnd_toEndOf="parent"

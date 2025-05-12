@@ -15,15 +15,14 @@ interface ApiInterface {
 
     @Headers("Authorization: Bearer ${Utils.SECRET_KEY}", "stripe-version: 2024-06-20")
     @POST("v1/ephemeral_keys")
-    fun getEphemeralKey(@Query("customer") customer: String, ): Call<EphemeralKeyModel>
+    fun getEphemeralKey(@Query("customer") customer: String): Call<EphemeralKeyModel>
 
     @Headers("Authorization: Bearer ${Utils.SECRET_KEY}")
     @POST("v1/payment_intents")
     fun getPaymentIntents(
         @Query("customer") customer: String,
         @Query("amount") amount: String,
-        @Query("currency") currency: String = "usd",
-        @Query("automatic_payment_methods[enabled]") automatePay: Boolean = true,
+        @Query("currency") currency: String = "vnd",
+        @Query("payment_method_types[]") paymentMethodType: String = "card"
     ): Call<PaymentIntentModel>
-
 }

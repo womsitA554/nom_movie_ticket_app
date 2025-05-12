@@ -3,21 +3,21 @@
     <item
         android:id="@+id/tab_home"
         android:icon="@drawable/home_icon"
-        android:title="Home" />
+        android:title="Trang chủ" />
     <item
         android:id="@+id/tab_theater"
         android:icon="@drawable/theater_icon"
-        android:title="Cinema" />
+        android:title="Rạp" />
     <item
         android:id="@+id/tab_food"
         android:icon="@drawable/food_icon"
-        android:title="Food" />
+        android:title="Đồ ăn" />
     <item
         android:id="@+id/tab_ticket"
         android:icon="@drawable/ticket_icon"
-        android:title="Ticket" />
+        android:title="Vé" />
     <item
         android:id="@+id/tab_profile"
         android:icon="@drawable/setting_icon"
-        android:title="Setting" />
+        android:title="Cài đặt" />
 </menu>

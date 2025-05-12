@@ -8,23 +8,21 @@
     style="@style/ScreenBackground"
     tools:context=".ui.view.activity.RegisterActivity">
 
-    <ImageButton
+    <ImageView
         android:id="@+id/btnBack"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:background="?attr/selectableItemBackgroundBorderless"
         android:padding="20dp"
-        style="@style/TextColor"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@drawable/back_icon"
-        app:tint="@color/black" />
+        android:src="@drawable/back_icon" />
 
     <TextView
         android:id="@+id/textView6"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Your Profile"
+        android:text="Thiết lập hồ sơ của bạn"
         style="@style/TextColor"
         android:textSize="18sp"
         app:layout_constraintBottom_toBottomOf="@+id/btnBack"
@@ -60,7 +58,7 @@
         android:layout_marginTop="50dp"
         android:layout_marginEnd="20dp"
         android:inputType="text"
-        android:hint="First Name (Required)"
+        android:hint="Tên (Bắt buộc)"
         android:padding="15dp"
         style="@style/TextColor"
         android:background="@drawable/item_white_stroke_backgound"
@@ -76,7 +74,7 @@
         android:layout_marginEnd="20dp"
         android:layout_marginTop="20dp"
         android:background="@drawable/item_white_stroke_backgound"
-        android:hint="Last Name (Required)"
+        android:hint="Họ (Required)"
         android:inputType="text"
         android:padding="15dp"
         style="@style/TextColor"
@@ -92,7 +90,7 @@
         android:layout_marginEnd="20dp"
         android:background="@drawable/button_book_now_background"
         android:letterSpacing="0.1"
-        android:text="continue"
+        android:text="Tiếp tục"
         android:layout_marginTop="50dp"
         android:textColor="@android:color/white"
         android:textStyle="bold"

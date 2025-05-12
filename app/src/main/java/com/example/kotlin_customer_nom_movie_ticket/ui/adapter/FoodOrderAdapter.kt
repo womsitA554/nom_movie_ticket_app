@@ -9,6 +9,8 @@ import com.bumptech.glide.load.resource.bitmap.CenterCrop
 import com.bumptech.glide.request.RequestOptions
 import com.example.kotlin_customer_nom_movie_ticket.data.model.Cart
 import com.example.kotlin_customer_nom_movie_ticket.databinding.FoodOrderItemBinding
+import java.text.NumberFormat
+import java.util.Locale
 
 class FoodOrderAdapter(private val list: MutableList<Cart>) : RecyclerView.Adapter<FoodOrderAdapter.viewHolder>() {
     var onClickDeleteItem : (Cart, Int) -> Unit = { _, _ -> }
@@ -36,7 +38,9 @@ class FoodOrderAdapter(private val list: MutableList<Cart>) : RecyclerView.Adapt
             }
             binding.tvTitle.text = order.title
             binding.tvQuantity.text = order.quantity.toString()
-            binding.tvTotalPrice.text ="$" + order.price
+            val formatter = NumberFormat.getNumberInstance(Locale("vi", "VN"))
+            val foodPrice = order.price?.toInt()
+            binding.tvTotalPrice.text = formatter.format(foodPrice) + "đ"
         }
     }
 

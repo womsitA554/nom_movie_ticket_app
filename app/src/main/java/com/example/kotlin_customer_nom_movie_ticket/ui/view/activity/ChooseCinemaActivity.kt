@@ -1,20 +1,29 @@
 package com.example.kotlin_customer_nom_movie_ticket.ui.view.activity
 
+import android.content.Intent
 import android.os.Bundle
+import android.util.Log
+import android.view.View
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.content.ContextCompat
-import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.kotlin_customer_nom_movie_ticket.R
 import com.example.kotlin_customer_nom_movie_ticket.databinding.ActivityChooseCinemaBinding
-import com.example.kotlin_customer_nom_movie_ticket.ui.view.fragment.AllCinemaFragment
-import com.example.kotlin_customer_nom_movie_ticket.ui.view.fragment.FavoritesCinemaFragment
+import com.example.kotlin_customer_nom_movie_ticket.ui.adapter.CinemaAdapter
+import com.example.kotlin_customer_nom_movie_ticket.ui.view.activity.CinemaDetailActivity
+import com.example.kotlin_customer_nom_movie_ticket.ui.view.activity.CinemaDetailFromBookNowActivity
 import com.example.kotlin_customer_nom_movie_ticket.util.SessionManager
+import com.example.kotlin_customer_nom_movie_ticket.viewmodel.CinemaViewModel
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 class ChooseCinemaActivity : AppCompatActivity() {
     private lateinit var binding: ActivityChooseCinemaBinding
-    private var allCinemaFragment = AllCinemaFragment()
-    private var favoritesCinemaFragment = FavoritesCinemaFragment()
-    private var activeFragment: Fragment? = null
+    private lateinit var cinemaViewModel: CinemaViewModel
+    private lateinit var cinemaAdapter: CinemaAdapter
+    private var isCinemasLoaded = false
+    private var isFavoriteCinemasLoaded = false
     private lateinit var userId: String
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -22,6 +31,13 @@ class ChooseCinemaActivity : AppCompatActivity() {
         binding = ActivityChooseCinemaBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        binding.progressBar.visibility = View.VISIBLE
+        binding.progressBar.playAnimation()
+        binding.rcvAllCinema.visibility = View.GONE
+        binding.tvChooseArena.visibility = View.GONE
+
+        userId = SessionManager.getUserId(this).toString()
+        val intent = intent
         val movieId = intent.getStringExtra("movie_id")
         val movieCountry = intent.getStringExtra("country")
         val moviePosterUrl = intent.getStringExtra("poster_url")
@@ -39,85 +55,166 @@ class ChooseCinemaActivity : AppCompatActivity() {
         val movieRating = intent.getFloatExtra("rating", 0f)
         val movieBanner = intent.getStringExtra("banner")
 
-        userId = SessionManager.getUserId(this).toString()
+        setupRecycleView()
+        cinemaViewModel = CinemaViewModel()
 
-        if(savedInstanceState == null){
-            initializeFragments(movieId, moviePosterUrl, movieTitle, movieReleaseYear,movieLanguage, movieCountry, movieDuration, movieGenre, movieSynopsis, movieDirectorId, movieStatus, movieTrailerUrl, movieActorIds, movieAgeRating, movieRating, movieBanner)
-            showFragment(allCinemaFragment)
-            updateColor(1)
-        }
+        cinemaAdapter = CinemaAdapter(cinemaViewModel, emptyList(), userId)
+        binding.rcvAllCinema.adapter = cinemaAdapter
 
-        binding.btnAllCinema.setOnClickListener {
-            showFragment(allCinemaFragment)
-            updateColor(1)
-        }
+        cinemaViewModel.fetchCinemas()
+        cinemaViewModel.fetchFavoriteCinemas(userId)
 
-        binding.btnFavoriteCinema.setOnClickListener {
-            showFragment(favoritesCinemaFragment)
-            updateColor(2)
+        setupObservers(
+            movieId, movieCountry, moviePosterUrl, movieTitle, movieReleaseYear,
+            movieLanguage, movieDuration, movieGenre, movieSynopsis, movieDirectorId,
+            movieStatus, movieTrailerUrl, movieActorIds, movieAgeRating, movieRating, movieBanner
+        )
+
+        lifecycleScope.launch {
+            delay(10000)
+            if (!isCinemasLoaded || !isFavoriteCinemasLoaded) {
+                if (!isCinemasLoaded) {
+                    Toast.makeText(this@ChooseCinemaActivity, "Timeout loading cinemas", Toast.LENGTH_SHORT).show()
+                    isCinemasLoaded = true
+                }
+                if (!isFavoriteCinemasLoaded) {
+                    Toast.makeText(this@ChooseCinemaActivity, "Timeout loading favorite cinemas", Toast.LENGTH_SHORT).show()
+                    isFavoriteCinemasLoaded = true
+                }
+                checkAllDataLoaded()
+            }
         }
 
         binding.btnBack.setOnClickListener {
-            onBackPressed()
+            finish()
         }
     }
 
-    private fun initializeFragments(movieId: String?,moviePosterUrl: String?, movieTitle: String?,movieLanguage: String?, movieCountry: String?,  movieReleaseYear: String?, movieDuration: Int?, movieGenre: String?, movieSynopsis: String?, movieDirectorId: String?, movieStatus: String?, movieTrailerUrl: String?, movieActorIds: List<String>?, movieAgeRating: String?, movieRating: Float?, movieBanner: String?) {
-        val fragmentTransaction = supportFragmentManager.beginTransaction()
-
-        val allCinemaBundle = Bundle().apply {
-            putString("movie_id", movieId)
-            putString("poster_url", moviePosterUrl)
-            putString("title", movieTitle)
-            putString("release_year", movieReleaseYear)
-            putString("language", movieLanguage)
-            putInt("duration", movieDuration!!)
-            putString("genre", movieGenre)
-            putString("synopsis", movieSynopsis)
-            putString("director_id", movieDirectorId)
-            putString("status", movieStatus)
-            putString("trailer_url", movieTrailerUrl)
-            putStringArrayList("actor_ids", movieActorIds?.let { ArrayList(it) })
-            putString("age_rating", movieAgeRating)
-            putFloat("rating", movieRating!!)
-            putString("banner", movieBanner)
-            putString("country", movieCountry)
-        }
-        allCinemaFragment.arguments = allCinemaBundle
-
-        val favoritesCinemaBundle = Bundle().apply {
-            putString("movie_id", movieId)
-        }
-        favoritesCinemaFragment.arguments = favoritesCinemaBundle
-
-        if (supportFragmentManager.findFragmentByTag("ALLCINEMA") == null) {
-            fragmentTransaction.add(R.id.fragment_container_cinema, allCinemaFragment, "ALLCINEMA").hide(allCinemaFragment)
-        }
-        if (supportFragmentManager.findFragmentByTag("FAVORITECINEMA") == null) {
-            fragmentTransaction.add(R.id.fragment_container_cinema, favoritesCinemaFragment, "FAVORITECINEMA").hide(favoritesCinemaFragment)
+    private fun setupObservers(
+        movieId: String?, movieCountry: String?, moviePosterUrl: String?, movieTitle: String?,
+        movieReleaseYear: String?, movieLanguage: String?, movieDuration: Int?, movieGenre: String?,
+        movieSynopsis: String?, movieDirectorId: String?, movieStatus: String?,
+        movieTrailerUrl: String?, movieActorIds: List<String>?, movieAgeRating: String?,
+        movieRating: Float?, movieBanner: String?
+    ) {
+        cinemaViewModel.cinemas.observe(this) { cinemas ->
+            isCinemasLoaded = true
+            if (cinemas.isEmpty()) {
+                Toast.makeText(this, "No cinemas found", Toast.LENGTH_SHORT).show()
+            }
+            setupCinemaAdapter(
+                cinemas, movieId, movieCountry, moviePosterUrl, movieTitle,
+                movieReleaseYear, movieLanguage, movieDuration, movieGenre, movieSynopsis,
+                movieDirectorId, movieStatus, movieTrailerUrl, movieActorIds, movieAgeRating,
+                movieRating, movieBanner
+            )
+            checkAllDataLoaded()
         }
 
-        fragmentTransaction.commit()
+        cinemaViewModel.favoriteCinemas.observe(this) { favoriteCinemas ->
+            isFavoriteCinemasLoaded = true
+            if (favoriteCinemas.isEmpty()) {
+                Log.d("ChooseCinemaActivity", "No favorite cinemas found")
+            }
+            cinemaAdapter = CinemaAdapter(cinemaViewModel, favoriteCinemas, userId)
+            binding.rcvAllCinema.adapter = cinemaAdapter
+            setupCinemaAdapter(
+                cinemaViewModel.cinemas.value ?: emptyList(), movieId, movieCountry,
+                moviePosterUrl, movieTitle, movieReleaseYear, movieLanguage, movieDuration,
+                movieGenre, movieSynopsis, movieDirectorId, movieStatus, movieTrailerUrl,
+                movieActorIds, movieAgeRating, movieRating, movieBanner
+            )
+            checkAllDataLoaded()
+        }
     }
 
-    private fun showFragment(fragment: Fragment) {
-        val fragmentTransaction = supportFragmentManager.beginTransaction()
+    private fun setupCinemaAdapter(
+        cinemas: List<com.example.kotlin_customer_nom_movie_ticket.data.model.Cinema>,
+        movieId: String?, movieCountry: String?, moviePosterUrl: String?, movieTitle: String?,
+        movieReleaseYear: String?, movieLanguage: String?, movieDuration: Int?, movieGenre: String?,
+        movieSynopsis: String?, movieDirectorId: String?, movieStatus: String?,
+        movieTrailerUrl: String?, movieActorIds: List<String>?, movieAgeRating: String?,
+        movieRating: Float?, movieBanner: String?
+    ) {
+        cinemaAdapter.updateData(cinemas)
 
-        if (activeFragment != null && activeFragment != fragment) {
-            fragmentTransaction.hide(activeFragment!!)
+        cinemaAdapter.onClickItem = { cinema, _ ->
+            if (movieId == null) {
+                val intent = Intent(this, CinemaDetailActivity::class.java)
+                intent.putExtra("customer_id", userId)
+                intent.putExtra("cinema_id", cinema.cinema_id)
+                intent.putExtra("cinema_name", cinema.cinema_name)
+                intent.putExtra("address", cinema.address)
+                intent.putExtra("latitude", cinema.latitude)
+                intent.putExtra("longitude", cinema.longitude)
+                intent.putExtra("phone_number", cinema.phone_number)
+                intent.putExtra("created_at", cinema.created_at)
+                intent.putExtra("country", movieCountry)
+                intent.putExtra("title", movieTitle)
+                intent.putExtra("poster_url", moviePosterUrl)
+                intent.putExtra("language", movieLanguage)
+                intent.putExtra("release_year", movieReleaseYear)
+                intent.putExtra("duration", movieDuration)
+                intent.putExtra("genre", movieGenre)
+                intent.putExtra("synopsis", movieSynopsis)
+                intent.putExtra("director_id", movieDirectorId)
+                intent.putExtra("status", movieStatus)
+                intent.putExtra("trailer_url", movieTrailerUrl)
+                intent.putExtra("banner", movieBanner)
+                intent.putExtra("age_rating", movieAgeRating)
+                intent.putExtra("rating", movieRating)
+                intent.putStringArrayListExtra("actor_ids", movieActorIds?.let { ArrayList(it) })
+                startActivity(intent)
+                overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left)
+            } else {
+                val intent = Intent(this, CinemaDetailFromBookNowActivity::class.java)
+                intent.putExtra("movie_id", movieId)
+                intent.putExtra("customer_id", userId)
+                intent.putExtra("cinema_id", cinema.cinema_id)
+                intent.putExtra("cinema_name", cinema.cinema_name)
+                intent.putExtra("address", cinema.address)
+                intent.putExtra("latitude", cinema.latitude)
+                intent.putExtra("longitude", cinema.longitude)
+                intent.putExtra("phone_number", cinema.phone_number)
+                intent.putExtra("created_at", cinema.created_at)
+                intent.putExtra("country", movieCountry)
+                intent.putExtra("title", movieTitle)
+                intent.putExtra("poster_url", moviePosterUrl)
+                intent.putExtra("language", movieLanguage)
+                intent.putExtra("release_year", movieReleaseYear)
+                intent.putExtra("duration", movieDuration)
+                intent.putExtra("genre", movieGenre)
+                intent.putExtra("synopsis", movieSynopsis)
+                intent.putExtra("director_id", movieDirectorId)
+                intent.putExtra("status", movieStatus)
+                intent.putExtra("trailer_url", movieTrailerUrl)
+                intent.putExtra("banner", movieBanner)
+                intent.putExtra("age_rating", movieAgeRating)
+                intent.putExtra("rating", movieRating)
+                intent.putStringArrayListExtra("actor_ids", movieActorIds?.let { ArrayList(it) })
+                startActivity(intent)
+                overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left)
+            }
         }
-
-        fragmentTransaction.show(fragment)
-
-        activeFragment = fragment
-        fragmentTransaction.commit()
     }
 
-    private fun updateColor(selected : Int){
-        binding.btnAllCinema.setTextColor(if (selected == 1) ContextCompat.getColor(this, R.color.orange) else ContextCompat.getColor(this, R.color.grey))
-        binding.btnAllCinema.setBackgroundResource(if (selected == 1) R.drawable.my_ticket_orange_background else R.drawable.my_ticket_grey_background)
+    private fun checkAllDataLoaded() {
+        if (isCinemasLoaded && isFavoriteCinemasLoaded) {
+            stopAnimation()
+            binding.rcvAllCinema.visibility = View.VISIBLE
+            binding.tvChooseArena.visibility = View.VISIBLE
+            Log.d("ChooseCinemaActivity", "All data loaded, showing rcvAllCinema")
+        }
+    }
 
-        binding.btnFavoriteCinema.setTextColor(if (selected == 2) ContextCompat.getColor(this, R.color.orange) else ContextCompat.getColor(this, R.color.grey))
-        binding.btnFavoriteCinema.setBackgroundResource(if (selected == 2) R.drawable.my_ticket_orange_background else R.drawable.my_ticket_grey_background)
+    private fun stopAnimation() {
+        binding.progressBar.cancelAnimation()
+        binding.progressBar.visibility = View.GONE
+    }
+
+    private fun setupRecycleView() {
+        binding.rcvAllCinema.setHasFixedSize(false)
+        binding.rcvAllCinema.layoutManager = LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
+        binding.rcvAllCinema.isNestedScrollingEnabled = true
     }
 }

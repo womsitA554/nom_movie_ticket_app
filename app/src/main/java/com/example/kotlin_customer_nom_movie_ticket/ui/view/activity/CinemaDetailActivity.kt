@@ -250,10 +250,12 @@ class CinemaDetailActivity : AppCompatActivity(), OnMapReadyCallback {
                                     binding.rcvListMovieIsShowing.adapter = chooseListMovieAdapter
                                     binding.rcvListMovieIsShowing.visibility = View.VISIBLE
                                     binding.layoutNotFoundMovie.visibility = View.GONE
+                                    Log.d("CinemaDetailActivity>>>", "Filtered Movies: $filteredMovies")
                                 } else {
                                     binding.rcvListMovieIsShowing.adapter = null
                                     binding.rcvListMovieIsShowing.visibility = View.GONE
                                     binding.layoutNotFoundMovie.visibility = View.VISIBLE
+                                    Log.d("CinemaDetailActivity>>>", "No movies found for the selected date and cinema")
                                 }
                                 isMoviesAndShowtimesLoaded = true
                                 checkAllDataLoaded()

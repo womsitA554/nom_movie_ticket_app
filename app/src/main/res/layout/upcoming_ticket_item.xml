@@ -87,7 +87,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:fontFamily="@font/urbanist_regular"
-            android:text="Remind me 30 minutes earlier"
+            android:text="Nhắc tôi sớm hơn 30 phút"
             android:textSize="15sp" />
 
         <Switch

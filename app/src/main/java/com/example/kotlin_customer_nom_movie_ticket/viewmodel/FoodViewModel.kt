@@ -8,20 +8,12 @@ import com.example.kotlin_customer_nom_movie_ticket.data.repository.FoodAndDrink
 
 class FoodViewModel : ViewModel() {
     private val foodAndDrinkRepository = FoodAndDrinkRepository()
-    private val _popularFood = MutableLiveData<List<Food>>()
     private val _food = MutableLiveData<List<Food>>()
     private val _drink = MutableLiveData<List<Food>>()
     private val _combo = MutableLiveData<List<Food>>()
-    val popularFood: MutableLiveData<List<Food>> get() = _popularFood
     val food: MutableLiveData<List<Food>> get() = _food
     val drink: MutableLiveData<List<Food>> get() = _drink
     val combo: MutableLiveData<List<Food>> get() = _combo
-
-    fun fetchAllPopularFood() {
-        foodAndDrinkRepository.getAllPopularFood { foodList ->
-            _popularFood.value = foodList
-        }
-    }
 
     fun fetchAllFood() {
         foodAndDrinkRepository.getAllFood { foodList ->

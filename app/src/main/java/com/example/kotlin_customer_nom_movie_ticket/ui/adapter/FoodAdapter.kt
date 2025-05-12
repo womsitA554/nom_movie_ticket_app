@@ -8,6 +8,8 @@ import com.example.kotlin_customer_nom_movie_ticket.R
 import com.example.kotlin_customer_nom_movie_ticket.data.model.Food
 import com.example.kotlin_customer_nom_movie_ticket.data.model.Movie
 import com.example.kotlin_customer_nom_movie_ticket.databinding.FoodItemBinding
+import java.text.NumberFormat
+import java.util.Locale
 
 class FoodAdapter (private val listFood: List<Food>, private val isGrid: Boolean = false) : RecyclerView.Adapter<FoodAdapter.FoodViewHolder>() {
     var onClickItem: (Food, Int) -> Unit = { _, _ -> }
@@ -20,7 +22,9 @@ class FoodAdapter (private val listFood: List<Food>, private val isGrid: Boolean
         }
         fun onBind(food: Food){
             binding.tvTitleFood.text = food.title
-            binding.tvPrice.text = "$"+food.price
+            val formatter = NumberFormat.getNumberInstance(Locale("vi", "VN"))
+            val foodPrice = food.price.toInt()
+            binding.tvPrice.text = formatter.format(foodPrice) + "đ"
             Glide.with(binding.root.context).load(food.picUrl).into(binding.picFood)
         }
     }

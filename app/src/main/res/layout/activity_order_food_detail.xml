@@ -16,7 +16,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
-        <ImageButton
+        <ImageView
             android:id="@+id/btnBack"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -35,7 +35,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:fontFamily="@font/urbanist_bold"
-            android:text="Order Details"
+            android:text="Chi tiết thanh toán"
             style="@style/TextColor"
             android:textSize="23sp"
             android:textStyle="bold"
@@ -120,7 +120,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginStart="10dp"
                         android:fontFamily="@font/urbanist_bold"
-                        android:text="Choose pick up time"
+                        android:text="Chọn thời gian nhận"
                         style="@style/TextColor"
                         android:textSize="17sp"
                         android:textStyle="bold" />
@@ -131,7 +131,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginStart="10dp"
                         android:fontFamily="@font/urbanist_regular"
-                        android:text="You need to choose your pick up time"
+                        android:text="Bạn cần chọn thời gian nhận"
                         android:textColor="@color/dark_grey"
                         android:textSize="15sp"
                         android:textStyle="bold" />
@@ -152,7 +152,7 @@
                     android:layout_marginStart="15dp"
                     android:layout_marginTop="12dp"
                     android:fontFamily="@font/urbanist_bold"
-                    android:text="Price Details"
+                    android:text="Chi tiết giá"
                     style="@style/TextColor"
                     android:textSize="17sp"
                     android:textStyle="bold" />
@@ -177,7 +177,7 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:fontFamily="@font/urbanist_regular"
-                        android:text="Food Price"
+                        android:text="Giá đồ ăn"
                         android:textColor="@color/dark_grey"
                         android:textStyle="bold" />
 
@@ -204,7 +204,7 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:fontFamily="@font/urbanist_regular"
-                        android:text="Convenience Fee"
+                        android:text="Phí tiện lợi"
                         android:textColor="@color/dark_grey"
                         android:textStyle="bold" />
 
@@ -232,7 +232,7 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:fontFamily="@font/urbanist_regular"
-                        android:text="Actual Pay"
+                        android:text="Cần thanh toán"
                         android:textColor="@color/dark_grey"
                         android:textStyle="bold" />
 
@@ -261,7 +261,7 @@
                     android:layout_marginHorizontal="15dp"
                     android:layout_marginTop="12dp"
                     android:fontFamily="@font/urbanist_bold"
-                    android:text="Transaction Details"
+                    android:text="Chi tiết giao dịch"
                     style="@style/TextColor"
                     android:textSize="17sp"
                     android:textStyle="bold" />
@@ -286,7 +286,7 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:fontFamily="@font/urbanist_regular"
-                        android:text="Amount"
+                        android:text="Số lượng"
                         android:textColor="@color/dark_grey"
                         android:textStyle="bold" />
 
@@ -314,7 +314,7 @@
                         android:layout_gravity="center_vertical"
                         android:layout_weight="1"
                         android:fontFamily="@font/urbanist_regular"
-                        android:text="Status"
+                        android:text="Trạng thái"
                         android:textColor="@color/dark_grey"
                         android:textStyle="bold" />
 
@@ -345,7 +345,7 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:fontFamily="@font/urbanist_regular"
-                        android:text="Payment Method"
+                        android:text="Phương thức thanh toán"
                         android:textColor="@color/dark_grey"
                         android:textStyle="bold" />
 
@@ -373,7 +373,7 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:fontFamily="@font/urbanist_regular"
-                        android:text="Booking ID"
+                        android:text="Mã đơn hàng"
                         android:textColor="@color/dark_grey"
                         android:textStyle="bold" />
 
@@ -407,7 +407,7 @@
                 android:layout_weight="1"
                 android:lineSpacingExtra="3dp"
                 android:fontFamily="@font/urbanist_regular"
-                android:text="Purchase and pick up of food or drinks can only done on the same day."
+                android:text="Việc mua và nhận thức ăn hoặc đồ uống chỉ có thể thực hiện trong cùng ngày."
                 android:textColor="@color/dark_grey"
                 android:textStyle="bold" />
 
@@ -421,7 +421,7 @@
                 android:layout_weight="1"
                 android:lineSpacingExtra="3dp"
                 android:fontFamily="@font/urbanist_regular"
-                android:text="If you order food or drinks to watch a movie, we recommend picking it up 10 minutes before the movie starts."
+                android:text="Nếu bạn gọi đồ ăn hoặc đồ uống để xem phim, chúng tôi khuyên bạn nên gọi đồ ăn hoặc đồ uống trước khi phim bắt đầu 10 phút."
                 android:textColor="@color/dark_grey"
                 android:textStyle="bold" />
 

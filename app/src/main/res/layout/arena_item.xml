@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:padding="8dp"
+    style="@style/ScreenBackground">
+
+    <TextView
+        android:id="@+id/tvArenaName"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/urbanist_bold"
+        style="@style/TextColor"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:layout_weight="1"
+        android:padding="8dp" />
+
+    <TextView
+        android:id="@+id/tvQuantityArena"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/urbanist_bold"
+        style="@style/TextColor"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:layout_marginEnd="8dp"
+        android:padding="8dp" />
+
+    <ImageView
+        android:id="@+id/ivArenaDown"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:layout_gravity="center"
+        android:src="@drawable/down_icon_arena" />
+
+    <ImageView
+        android:id="@+id/ivArenaUp"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:layout_gravity="center"
+        android:visibility="gone"
+        android:src="@drawable/up_icon_arena" />
+
+</LinearLayout>

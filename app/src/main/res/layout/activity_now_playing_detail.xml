@@ -102,7 +102,6 @@
                         style="@style/TextColor"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="THE MARVELS"
                         android:textSize="25sp"
                         android:textStyle="bold" />
 
@@ -114,7 +113,7 @@
 
 
                         <LinearLayout
-                            android:layout_width="70dp"
+                            android:layout_width="78dp"
                             android:layout_height="match_parent"
                             android:orientation="horizontal">
 
@@ -125,7 +124,7 @@
                                 android:layout_height="wrap_content"
                                 android:layout_weight="1"
                                 android:gravity="start"
-                                android:text="Duration" />
+                                android:text="Thời lượng" />
 
                             <TextView
                                 android:id="@+id/textView18"
@@ -150,7 +149,7 @@
                         android:orientation="horizontal">
 
                         <LinearLayout
-                            android:layout_width="70dp"
+                            android:layout_width="78dp"
                             android:layout_height="match_parent"
                             android:orientation="horizontal">
 
@@ -161,7 +160,7 @@
                                 android:layout_height="wrap_content"
                                 android:layout_weight="1"
                                 android:gravity="start"
-                                android:text="Director" />
+                                android:text="Tác giả" />
 
                             <TextView
                                 android:id="@+id/textView19"
@@ -186,7 +185,7 @@
                         android:orientation="horizontal">
 
                         <LinearLayout
-                            android:layout_width="70dp"
+                            android:layout_width="78dp"
                             android:layout_height="match_parent"
                             android:layout_gravity="center_vertical"
                             android:orientation="horizontal">
@@ -198,7 +197,7 @@
                                 android:layout_height="wrap_content"
                                 android:layout_gravity="center_vertical"
                                 android:layout_weight="1"
-                                android:text="AR" />
+                                android:text="Kiểm duyệt" />
 
                             <TextView
                                 android:id="@+id/textView20"
@@ -228,7 +227,7 @@
                         android:orientation="horizontal">
 
                         <LinearLayout
-                            android:layout_width="70dp"
+                            android:layout_width="78dp"
                             android:layout_height="match_parent"
                             android:orientation="horizontal">
 
@@ -239,7 +238,7 @@
                                 android:layout_height="wrap_content"
                                 android:layout_weight="1"
                                 android:gravity="start"
-                                android:text="Genre" />
+                                android:text="Thể loại" />
 
                             <TextView
                                 android:id="@+id/textView21"
@@ -265,7 +264,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="15dp"
                 android:layout_marginTop="20dp"
-                android:text="Watch Trailer"
+                android:text="Xem Trailer"
                 android:textSize="17sp"
                 android:textStyle="bold" />
 
@@ -315,7 +314,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="15dp"
                 android:layout_marginTop="20dp"
-                android:text="Synopsis"
+                android:text="Tóm tắt"
                 android:textSize="17sp"
                 android:textStyle="bold" />
 
@@ -333,7 +332,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="15dp"
                 android:layout_marginTop="20dp"
-                android:text="Cast"
+                android:text="Dàn diễn viên"
                 android:textSize="17sp"
                 android:textStyle="bold" />
 
@@ -356,7 +355,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="15dp"
                 android:layout_marginTop="10dp"
-                android:text="Rating"
+                android:text="Đánh giá"
                 android:textSize="17sp"
                 android:textStyle="bold" />
 
@@ -410,7 +409,7 @@
                 android:background="@drawable/button_stroke_background"
                 android:elevation="0dp"
                 android:letterSpacing="0.1"
-                android:text="Rate this movie"
+                android:text="Đánh giá bộ phim này"
                 android:textColor="@color/orange"
                 android:textStyle="bold"
                 app:layout_constraintEnd_toEndOf="parent"
@@ -427,7 +426,7 @@
                 android:background="@drawable/button_book_now_background"
                 android:elevation="0dp"
                 android:letterSpacing="0.1"
-                android:text="Book Now"
+                android:text="Đặt vé"
                 android:textColor="@color/white"
                 android:textStyle="bold"
                 app:layout_constraintEnd_toEndOf="parent"

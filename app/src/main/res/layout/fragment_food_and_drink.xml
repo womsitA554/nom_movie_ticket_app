@@ -83,42 +83,6 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:layout_marginHorizontal="15dp"
-                    android:gravity="center"
-                    android:orientation="horizontal">
-
-                    <TextView
-                        android:id="@+id/textView51"
-                        style="@style/TextColor"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:fontFamily="@font/urbanist_bold"
-                        android:text="Most Popular"
-                        android:textSize="18sp"
-                        android:textStyle="bold" />
-                </LinearLayout>
-
-                <androidx.constraintlayout.widget.ConstraintLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent">
-
-                    <androidx.recyclerview.widget.RecyclerView
-                        android:id="@+id/rcvPopular"
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:clipToPadding="false"
-                        android:paddingHorizontal="15dp"
-                        android:paddingTop="10dp"
-                        android:paddingBottom="5dp"
-                        app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintStart_toStartOf="parent" />
-                </androidx.constraintlayout.widget.ConstraintLayout>
-
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:layout_marginHorizontal="15dp"
                     android:layout_marginTop="15dp"
                     android:gravity="center_vertical"
                     android:orientation="horizontal">
@@ -130,7 +94,7 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:fontFamily="@font/urbanist_bold"
-                        android:text="Food"
+                        android:text="Đồ ăn"
                         android:textSize="18sp"
                         android:textStyle="bold" />
 
@@ -166,7 +130,7 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:fontFamily="@font/urbanist_bold"
-                        android:text="Drink"
+                        android:text="Đồ uống"
                         android:textSize="18sp"
                         android:textStyle="bold" />
 

@@ -49,12 +49,12 @@
 
             <Button
                 android:id="@+id/btnNotAllow"
-                android:layout_width="110dp"
+                android:layout_width="135dp"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:backgroundTint="#FFE8E0"
                 android:paddingVertical="8dp"
-                android:text="Don't Allow"
+                android:text="Không cho phép"
                 android:textAllCaps="false"
                 android:textColor="@color/orange"
                 android:textSize="11sp"
@@ -68,7 +68,7 @@
                 android:layout_marginStart="10dp"
                 android:backgroundTint="#FF5722"
                 android:paddingVertical="8dp"
-                android:text="Allow"
+                android:text="Cho phép"
                 android:textAllCaps="false"
                 android:textColor="@android:color/white"
                 android:textSize="11sp"

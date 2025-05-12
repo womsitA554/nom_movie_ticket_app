@@ -41,6 +41,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.lang.reflect.Field
+import java.text.NumberFormat
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
@@ -89,7 +90,7 @@ class FoodPaymentDetailActivity : AppCompatActivity() {
             listCart.removeAt(i)
             cartAdapter.notifyItemRemoved(i)
             totalPriceOfCart -= cart.price ?: 0.0
-            updateUi(totalPriceOfCart, totalPriceOfCart * 0.01)
+            updateUi(totalPriceOfCart, totalPriceOfCart * 0.03)
             if (listCart.isEmpty()) updateCartVisibility()
         }
 
@@ -106,8 +107,8 @@ class FoodPaymentDetailActivity : AppCompatActivity() {
             cartManager.updatePrice(userId, cart.itemId, newPrice)
 
             cartAdapter.notifyItemChanged(i)
-            totalPriceOfCart = cartManager.totalPriceOfCart(userId)
-            updateUi(totalPriceOfCart, totalPriceOfCart * 0.01)
+            totalPriceOfCart = cartManager.totalPriceOfCart(userId).toDouble()
+            updateUi(totalPriceOfCart, totalPriceOfCart * 0.03)
         }
 
         cartAdapter.onClickRemoveItem = { cart, i ->
@@ -126,8 +127,8 @@ class FoodPaymentDetailActivity : AppCompatActivity() {
                 cartAdapter.notifyItemChanged(i)
             }
 
-            totalPriceOfCart = cartManager.totalPriceOfCart(userId)
-            updateUi(totalPriceOfCart, totalPriceOfCart * 0.01)
+            totalPriceOfCart = cartManager.totalPriceOfCart(userId).toDouble()
+            updateUi(totalPriceOfCart, totalPriceOfCart * 0.03)
             if (listCart.isEmpty()) updateCartVisibility()
         }
 
@@ -135,7 +136,7 @@ class FoodPaymentDetailActivity : AppCompatActivity() {
             totalPriceOfCart += cart.price!!
         }
 
-        val fee = totalPriceOfCart * 0.01
+        val fee = totalPriceOfCart * 0.03
         totalPriceToPay = totalPriceOfCart + fee
         updateUi(totalPriceOfCart, fee)
 
@@ -212,7 +213,7 @@ class FoodPaymentDetailActivity : AppCompatActivity() {
             }
             // Max points = min(available points, 10% of totalPriceOfCart * 100)
             val maxDiscount = totalPriceOfCart * 0.10 // Max discount in dollars
-            val maxPoints = (maxDiscount * 100).toInt() // 1 point = $0.01
+            val maxPoints = (maxDiscount * 1000).toInt() // 1 point = $0.01
             val maxUsablePoints = min(availablePoints, maxPoints)
 
             tvAvailablePoints?.text = availablePoints.toString()
@@ -251,14 +252,17 @@ class FoodPaymentDetailActivity : AppCompatActivity() {
 
                 // Store points to deduct and apply discount
                 pointsToDeduct = inputPoints
-                discountApplied = inputPoints * 0.01
-                totalPriceToPay = totalPriceOfCart + (totalPriceOfCart * 0.01) - discountApplied
+                discountApplied = inputPoints * 0.1
+                totalPriceToPay = totalPriceOfCart + (totalPriceOfCart * 0.03) - discountApplied
+                Log.d("actualPay", "Discount applied: $totalPriceToPay")
 
                 // Update UI to show points used and discount
                 binding.linearLayoutPoint.visibility = View.VISIBLE
                 binding.tvPointUse.text = "($inputPoints)"
-                binding.tvPointToPrice.text = "-$${String.format("%.2f", discountApplied)}"
-                updateUi(totalPriceOfCart, totalPriceOfCart * 0.01)
+                val formatter = NumberFormat.getNumberInstance(Locale("vi", "VN"))
+                val pointPrice = discountApplied
+                binding.tvPointToPrice.text = "-" + formatter.format(pointPrice) + "đ"
+                updateUi(totalPriceOfCart, totalPriceOfCart * 0.03)
 
                 dialog.dismiss()
                 Toast.makeText(this@FoodPaymentDetailActivity, "Discount applied: $${String.format("%.2f", discountApplied)}", Toast.LENGTH_SHORT).show()
@@ -269,9 +273,9 @@ class FoodPaymentDetailActivity : AppCompatActivity() {
             // Reset points and discount if canceled
             pointsToDeduct = 0
             discountApplied = 0.0
-            totalPriceToPay = totalPriceOfCart + (totalPriceOfCart * 0.01)
+            totalPriceToPay = totalPriceOfCart + (totalPriceOfCart * 0.03)
             binding.linearLayoutPoint.visibility = View.GONE
-            updateUi(totalPriceOfCart, totalPriceOfCart * 0.01)
+            updateUi(totalPriceOfCart, totalPriceOfCart * 0.03)
             dialog.dismiss()
         }
     }
@@ -319,9 +323,13 @@ class FoodPaymentDetailActivity : AppCompatActivity() {
     }
 
     private fun updateUi(totalPrice: Double, fee: Double) {
-        binding.tvPriceOfItem.text = "$${String.format("%.2f", totalPrice)}"
-        binding.tvFee.text = "$${String.format("%.2f", fee)}"
-        binding.tvActualPay.text = "$${String.format("%.2f", totalPrice + fee - discountApplied)}"
+        val formatter = NumberFormat.getNumberInstance(Locale("vi", "VN"))
+        val totalPrices = totalPrice
+        val fees = fee
+        val actualPays = totalPrice + fee - discountApplied
+        binding.tvPriceOfItem.text = formatter.format(totalPrices) + "đ"
+        binding.tvFee.text = formatter.format(fees) + "đ"
+        binding.tvActualPay.text = formatter.format(actualPays) + "đ"
 
         binding.btnContinue.isEnabled = totalPrice > 0
 
@@ -448,31 +456,42 @@ class FoodPaymentDetailActivity : AppCompatActivity() {
     private fun getPaymentIntent(customerId: String, ephemeralKey: String) {
         lifecycleScope.launch(Dispatchers.IO) {
             try {
+                val amountVND = (totalPriceToPay - discountApplied).toInt()
+                Log.d("PaymentIntent", "Creating PaymentIntent with customer=$customerId, amount=$amountVND, currency=vnd")
                 val response = apiInterface.getPaymentIntents(
-                    customerId,
-                    ((totalPriceToPay - discountApplied) * 100).toInt().toString()
+                    customer = customerId,
+                    amount = amountVND.toString(),
+                    currency = "vnd",
+                    paymentMethodType = "card"
                 ).execute()
                 if (response.isSuccessful) {
                     clientSecretKey = response.body()?.client_secret
                     withContext(Dispatchers.Main) {
                         Log.d("PaymentIntent", "Client Secret: $clientSecretKey")
+                        // Kích hoạt nút Continue
+                        binding.btnContinue.isEnabled = true
+                        binding.btnContinue.alpha = 1.0f
                     }
                 } else {
                     withContext(Dispatchers.Main) {
-                        Log.e(
-                            "getPaymentIntent",
-                            "Failed to get payment intent: ${response.code()}"
-                        )
+                        Log.e("getPaymentIntent", "Failed to get payment intent: ${response.code()}")
+                        Toast.makeText(
+                            applicationContext,
+                            "Failed to initialize payment: ${response.code()}",
+                            Toast.LENGTH_LONG
+                        ).show()
                     }
                 }
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
                     Log.e("getPaymentIntent", "Error: ${e.message}")
+                    Toast.makeText(applicationContext,
+                        "Error initializing payment: ${e.message}",
+                        Toast.LENGTH_LONG).show()
                 }
             }
         }
     }
-
     private fun onPaymentSheetResult(paymentSheetResult: PaymentSheetResult) {
         when (paymentSheetResult) {
             is PaymentSheetResult.Completed -> {

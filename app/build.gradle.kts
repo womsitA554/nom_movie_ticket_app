@@ -115,4 +115,7 @@ dependencies {
     // bottom bar
     implementation ("nl.joery.animatedbottombar:library:1.1.0")
 
+    implementation ("com.google.code.gson:gson:2.10.1")
+    implementation ("androidx.recyclerview:recyclerview:1.3.2")
+
 }

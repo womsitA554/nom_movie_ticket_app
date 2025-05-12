@@ -10,20 +10,24 @@ import com.example.kotlin_customer_nom_movie_ticket.data.model.Cart
 import com.example.kotlin_customer_nom_movie_ticket.data.model.FoodItem
 import com.example.kotlin_customer_nom_movie_ticket.databinding.FoodOrderDetailItemBinding
 import com.example.kotlin_customer_nom_movie_ticket.databinding.FoodOrderItemBinding
+import java.text.NumberFormat
+import java.util.Locale
 
 class FoodOrderDetailAdapter(private val list: List<FoodItem>) : RecyclerView.Adapter<FoodOrderDetailAdapter.viewHolder>() {
     class viewHolder(private val binding: FoodOrderDetailItemBinding) : RecyclerView.ViewHolder(binding.root){
         fun onBind(foodItem: FoodItem){
             val options = RequestOptions().transform(CenterCrop())
-            foodItem.picUrl?.let { url ->
+            foodItem.picUrl.let { url ->
                 Glide.with(binding.img.context)
                     .load(url)
                     .apply(options)
                     .into(binding.img)
             }
+            val formatter = NumberFormat.getNumberInstance(Locale("vi", "VN"))
+
             binding.tvTitle.text = foodItem.title
             binding.tvQuantity.text = "x" + foodItem.quantity.toString()
-            binding.tvTotalPrice.text ="$" + foodItem.price
+            binding.tvTotalPrice.text = formatter.format(foodItem.price?.toInt()) + "đ"
         }
     }
 

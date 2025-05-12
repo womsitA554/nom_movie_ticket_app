@@ -32,7 +32,7 @@
             android:layout_marginTop="8dp"
             android:layout_marginBottom="16dp"
             android:fontFamily="@font/urbanist_bold"
-            android:text="You have 7 minutes to choose your seat."
+            android:text="Bạn có 7 phút để chọn chỗ ngồi."
             style="@style/TextColor"
             android:textSize="15sp" />
 
@@ -44,7 +44,7 @@
             android:backgroundTint="#FF5722"
             android:paddingHorizontal="24dp"
             android:paddingVertical="8dp"
-            android:text="I Understand"
+            android:text="Tôi hiểu"
             android:textAllCaps="false"
             android:textColor="@android:color/white"
             android:textSize="13sp" />

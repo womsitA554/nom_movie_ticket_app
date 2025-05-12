@@ -155,7 +155,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="15dp"
                 android:layout_marginTop="15dp"
-                android:text="Showtime"
+                android:text="Lịch chiếu"
                 android:fontFamily="@font/urbanist_bold"
                 style="@style/TextColor"
                 android:textSize="18sp"

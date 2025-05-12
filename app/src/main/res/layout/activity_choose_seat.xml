@@ -16,7 +16,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
-        <ImageButton
+        <ImageView
             android:id="@+id/btnBack"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -32,7 +32,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Choose Seat(s)"
+            android:text="Chọn ghế"
             android:textSize="23sp"
             android:textStyle="bold"
             style="@style/TextColor"
@@ -86,7 +86,7 @@
                 android:layout_height="wrap_content"
                 android:gravity="center_horizontal"
                 android:letterSpacing="0.1"
-                android:text="Cinema Screen Here" />
+                android:text="Màn hình" />
 
             <com.airbnb.lottie.LottieAnimationView
                 android:id="@+id/progressBar"
@@ -136,7 +136,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="7dp"
-                        android:text="Reserved" />
+                        android:text="Đã chọn" />
                 </LinearLayout>
 
                 <LinearLayout
@@ -160,7 +160,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="7dp"
-                        android:text="Selecting" />
+                        android:text="Đang chọn" />
                 </LinearLayout>
 
                 <LinearLayout
@@ -184,7 +184,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="7dp"
-                        android:text="Booked" />
+                        android:text="Đã bán" />
                 </LinearLayout>
             </LinearLayout>
 
@@ -266,7 +266,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:gravity="center"
-                        android:text="Total Price" />
+                        android:text="Tổng tiền" />
 
                     <TextView
                         android:id="@+id/tvPrice"
@@ -293,7 +293,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:gravity="center"
-                        android:text="Seat(s)" />
+                        android:text="Ghế" />
 
                     <TextView
                         android:id="@+id/tvSeatQuantity"
@@ -317,7 +317,7 @@
                 android:background="@drawable/button_book_now_background"
                 android:elevation="0dp"
                 android:letterSpacing="0.1"
-                android:text="Continue"
+                android:text="Tiếp tục"
                 android:textColor="@color/white"
                 android:textStyle="bold"
                 app:layout_constraintEnd_toEndOf="parent"

@@ -27,6 +27,8 @@ import com.example.kotlin_customer_nom_movie_ticket.viewmodel.SeatViewModel
 import com.google.firebase.database.FirebaseDatabase
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
+import java.text.NumberFormat
+import java.util.Locale
 
 class ChooseSeatActivity : AppCompatActivity() {
     private lateinit var binding: ActivityChooseSeatBinding
@@ -145,12 +147,12 @@ class ChooseSeatActivity : AppCompatActivity() {
 
         binding.btnContinue.setOnClickListener {
             if (seatAdapter.getSelectedSeatsCount() == 0) {
-                showChooseSeatFailDialog("Please select at least one seat")
+                showChooseSeatFailDialog("Vui lòng chọn ít nhất một chỗ ngồi")
                 return@setOnClickListener
             } else {
                 val (isValid, errorMessage) = checkSeatSelectionValidity()
                 if (!isValid) {
-                    showChooseSeatFailDialog("Please do not leave 1 empty seats on the left or right of the seats you have selected.")
+                    showChooseSeatFailDialog("Vui lòng không để trống 1 ghế bên trái hoặc bên phải chỗ ngồi mà bạn đã chọn.")
                     return@setOnClickListener
                 } else {
                     lifecycleScope.launch {
@@ -299,7 +301,7 @@ class ChooseSeatActivity : AppCompatActivity() {
             dialog.dismiss()
             binding.tvSeatQuantity.text = "0"
             totalPrice = 0.0
-            binding.tvPrice.text = "$0.0"
+            binding.tvPrice.text = "0đ"
             countDownTimer.cancel()
             onBackPressed()
         }
@@ -320,7 +322,9 @@ class ChooseSeatActivity : AppCompatActivity() {
                 }
             }
             this@ChooseSeatActivity.totalPrice = totalPrice
-            binding.tvPrice.text = String.format("$%.2f", totalPrice)
+            val formatter = NumberFormat.getNumberInstance(Locale("vi", "VN"))
+            val price = totalPrice.toInt()
+            binding.tvPrice.text = formatter.format(price) + "đ"
             Log.d("ChooseSeatActivity", "Total price for ${selectedSeats.size} seats: $totalPrice")
         }
     }

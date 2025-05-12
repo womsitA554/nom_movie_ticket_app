@@ -12,6 +12,8 @@ import com.example.kotlin_customer_nom_movie_ticket.data.model.FoodBooking
 import com.example.kotlin_customer_nom_movie_ticket.databinding.ActivityFoodPaymentDetailBinding
 import com.example.kotlin_customer_nom_movie_ticket.databinding.ActivityOrderFoodDetailBinding
 import com.example.kotlin_customer_nom_movie_ticket.ui.adapter.FoodOrderDetailAdapter
+import java.text.NumberFormat
+import java.util.Locale
 
 class OrderFoodDetailActivity : AppCompatActivity() {
     private lateinit var binding: ActivityOrderFoodDetailBinding
@@ -46,12 +48,13 @@ class OrderFoodDetailActivity : AppCompatActivity() {
         binding.tvTimePickUp.text = "Pick up at $time"
         binding.tvTimeValue.text = date
 
-        val foodPrice = foodBooking.total_price
-        binding.tvFoodPrice.text = "$$foodPrice"
-        binding.tvFee.text = "$${foodPrice * 0.01}"
-        binding.tvActualPay.text = "$${foodPrice + foodPrice * 0.01}"
+        val formatter = NumberFormat.getNumberInstance(Locale("vi", "VN"))
 
-        binding.tvTotalPrice.text = "$${foodPrice + foodPrice * 0.01}"
+        val foodPrice = foodBooking.total_price
+        binding.tvFoodPrice.text = formatter.format(foodPrice) + "đ"
+        binding.tvFee.text = formatter.format(foodPrice * 0.3) + "đ"
+        binding.tvActualPay.text = formatter.format(foodPrice + foodPrice * 0.03) + "đ"
+        binding.tvTotalPrice.text = formatter.format(foodPrice + foodPrice * 0.03) + "đ"
         binding.tvStatusPayment.text = foodBooking.payment_status
         binding.tvPaymentMethod.text = foodBooking.payment_method
         binding.tvBookingId.text = foodBooking.food_bill_id

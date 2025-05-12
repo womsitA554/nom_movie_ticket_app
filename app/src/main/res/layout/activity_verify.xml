@@ -7,7 +7,7 @@
     android:layout_height="match_parent"
     style="@style/ScreenBackground"
     tools:context=".ui.view.activity.VerifyActivity">
-    <ImageButton
+    <ImageView
         android:id="@+id/btnBack"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -23,7 +23,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="100dp"
-        android:text="Enter Code"
+        android:text="Nhập mã"
         android:textSize="27sp"
         style="@style/TextColor"
         android:textAlignment="center"
@@ -40,7 +40,7 @@
         android:textSize="15sp"
         android:textAlignment="center"
         style="@style/TextColor"
-        android:text="We have sent you an SMS with the code to"
+        android:text="Chúng tôi đã gửi cho bạn một tin nhắn SMS tới"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textView" />
@@ -50,7 +50,6 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="10dp"
-        android:text="+62 1309 - 1710 - 1920"
         style="@style/TextColor"
         app:layout_constraintEnd_toEndOf="@+id/textView4"
         app:layout_constraintStart_toStartOf="@+id/textView4"
@@ -159,7 +158,7 @@
         android:background="@drawable/button_book_now_background"
         android:elevation="4dp"
         android:letterSpacing="0.1"
-        android:text="Vertify"
+        android:text="Xác minh"
         android:textColor="@android:color/white"
         android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
@@ -170,7 +169,7 @@
         android:id="@+id/btnResenCode"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Resend Code"
+        android:text="Gửi lại mã"
         android:layout_marginTop="80dp"
         android:textStyle="bold"
         style="@style/TextColor"

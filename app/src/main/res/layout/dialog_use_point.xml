@@ -24,7 +24,7 @@
             android:layout_gravity="center"
             android:layout_marginHorizontal="30dp"
             android:fontFamily="@font/urbanist_bold"
-            android:text="Point"
+            android:text="Điểm"
             android:textAlignment="center"
             style="@style/TextColor"
             android:textSize="18sp"
@@ -86,7 +86,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="points available"
+                android:text="điểm có sẵn"
                 android:layout_marginStart="5dp"
                 android:textSize="15sp"
                 android:layout_marginTop="2dp"
@@ -120,7 +120,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:fontFamily="@font/urbanist_regular"
-                android:text="You can use up to:"
+                android:text="Bạn có thể sử dụng tối đa:"
                 android:textAlignment="center"
                 style="@style/TextColor"
                 android:textSize="16sp"
@@ -143,20 +143,7 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/lottieAnimationView" />
 
-            <TextView
-                android:id="@+id/textView12"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:layout_marginStart="5dp"
-                android:fontFamily="@font/urbanist_regular"
-                android:text="points for this order."
-                android:textAlignment="center"
-                style="@style/TextColor"
-                android:textSize="16sp"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/lottieAnimationView" />
+
         </LinearLayout>
 
         <LinearLayout
@@ -173,7 +160,7 @@
                 android:layout_gravity="center"
                 android:backgroundTint="#FFE8E0"
                 android:paddingVertical="8dp"
-                android:text="Cancel"
+                android:text="Đonng"
                 android:textAllCaps="false"
                 android:textColor="@color/orange"
                 android:textSize="11sp"
@@ -187,7 +174,7 @@
                 android:layout_marginStart="10dp"
                 android:backgroundTint="#FF5722"
                 android:paddingVertical="8dp"
-                android:text="Apply"
+                android:text="Áp dụng"
                 android:textAllCaps="false"
                 android:textColor="@android:color/white"
                 android:textSize="11sp"

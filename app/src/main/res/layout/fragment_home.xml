@@ -69,7 +69,7 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:fontFamily="@font/urbanist_regular"
-                            android:text="Your location" />
+                            android:text="Vị trí của bạn" />
 
                         <LinearLayout
                             android:layout_width="wrap_content"
@@ -172,7 +172,7 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:fontFamily="@font/urbanist_bold"
-                        android:text="Now Playing"
+                        android:text="Đang chiếu"
                         android:textSize="18sp"
                         android:textStyle="bold" />
 
@@ -188,7 +188,7 @@
                             android:layout_marginEnd="10dp"
                             android:layout_weight="1"
                             android:fontFamily="@font/urbanist_bold"
-                            android:text="View All"
+                            android:text="Xem tất cả"
                             android:textColor="@color/orange"
                             android:textStyle="bold" />
 
@@ -244,6 +244,7 @@
                                 android:layout_height="wrap_content"
                                 android:fontFamily="@font/urbanist_bold"
                                 android:maxLines="2"
+                                android:layout_weight="1"
                                 android:textSize="20sp"
                                 android:textStyle="bold" />
                             <TextView
@@ -254,6 +255,7 @@
                                 android:fontFamily="@font/urbanist_bold"
                                 android:paddingHorizontal="12dp"
                                 android:paddingVertical="5dp"
+                                android:layout_marginEnd="20dp"
                                 android:layout_gravity="center_vertical"
                                 android:layout_marginStart="10dp"
                                 android:textColor="@color/orange"
@@ -284,7 +286,7 @@
                         android:fontFamily="@font/urbanist_bold"
                         android:paddingHorizontal="10dp"
                         android:paddingVertical="10dp"
-                        android:text="Book Now"
+                        android:text="Đặt vé"
                         android:textColor="@color/orange"
                         android:textSize="12sp"
                         android:textStyle="bold" />
@@ -307,7 +309,7 @@
                         android:layout_gravity="center_vertical"
                         android:layout_weight="1"
                         android:fontFamily="@font/urbanist_bold"
-                        android:text="Coming Soon"
+                        android:text="Sắp chiếu"
                         android:textSize="18sp"
                         android:textStyle="bold" />
 
@@ -323,7 +325,7 @@
                             android:layout_marginEnd="10dp"
                             android:layout_weight="1"
                             android:fontFamily="@font/urbanist_bold"
-                            android:text="View All"
+                            android:text="Xem tất cả"
                             android:textColor="@color/orange"
                             android:textStyle="bold" />
 

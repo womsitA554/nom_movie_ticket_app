@@ -21,7 +21,7 @@
             android:fontFamily="@font/urbanist_bold"
             android:paddingHorizontal="20dp"
             android:paddingVertical="10dp"
-            android:text="Movie"
+            android:text="Phim"
             android:textSize="18sp" />
 
         <TextView
@@ -33,7 +33,7 @@
             android:fontFamily="@font/urbanist_bold"
             android:paddingHorizontal="20dp"
             android:paddingVertical="10dp"
-            android:text="Food"
+            android:text="Đồ ăn"
             android:textSize="18sp" />
     </LinearLayout>
 

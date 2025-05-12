@@ -61,6 +61,7 @@ import org.json.JSONObject
 import com.google.auth.oauth2.GoogleCredentials
 import java.io.IOException
 import java.lang.reflect.Field
+import java.text.NumberFormat
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
@@ -186,7 +187,7 @@ class PaymentDetailActivity : AppCompatActivity() {
             cartManager.updatePrice(userId, cart.itemId, newPrice)
 
             cartAdapter.notifyItemChanged(i)
-            totalPriceFood = cartManager.totalPriceOfCart(userId)
+            totalPriceFood = cartManager.totalPriceOfCart(userId).toDouble()
             updateUi(totalPriceSeats, totalPriceFood)
         }
 
@@ -201,12 +202,12 @@ class PaymentDetailActivity : AppCompatActivity() {
                 cart.price = newPrice
 
                 cartManager.updateQuantity(userId, cart.itemId!!, newQuantity)
-                cartManager.updatePrice(userId, cart.itemId!!, newPrice)
+                cartManager.updatePrice(userId, cart.itemId, newPrice)
 
                 cartAdapter.notifyItemChanged(i)
             }
 
-            totalPriceFood = cartManager.totalPriceOfCart(userId)
+            totalPriceFood = cartManager.totalPriceOfCart(userId).toDouble()
             updateUi(totalPriceSeats, totalPriceFood)
             if (listCart.isEmpty()) {
                 updateCartVisibility()
@@ -226,9 +227,8 @@ class PaymentDetailActivity : AppCompatActivity() {
         Glide.with(this).load(moviePosterUrl).into(binding.picMovie)
         binding.tvTitle.text = movieTitle
         binding.tvAgeRate.text = movieAgeRating
-        binding.tvDuration.text = "$movieDuration minutes"
+        binding.tvDuration.text = "$movieDuration phút"
         binding.tvGenre.text = movieGenre
-        binding.tvPackageName.text = "Standard"
         binding.tvCinemaName.text = cinemaName
 
         val parts = showtimeTime!!.split("T")
@@ -359,8 +359,8 @@ class PaymentDetailActivity : AppCompatActivity() {
                 viewModel.getCustomerPoints(userId)
             }
             // Max points = min(available points, 10% of totalPrice * 100)
-            val maxDiscount = totalPrice * 0.10 // Max discount in dollars
-            val maxPoints = (maxDiscount * 100).toInt() // 1 point = $0.01
+            val maxDiscount = totalPrice * 0.03 // Max discount in dollars
+            val maxPoints = (maxDiscount * 100).toInt() // 1 point = $0.03
             val maxUsablePoints = min(availablePoints, maxPoints)
 
             tvAvailablePoints?.text = availablePoints.toString()
@@ -380,7 +380,7 @@ class PaymentDetailActivity : AppCompatActivity() {
                     viewModel.getCustomerPoints(userId)
                 }
                 // Calculate max usable points again for validation
-                val maxDiscount = totalPrice * 0.10
+                val maxDiscount = totalPrice * 0.03
                 val maxPoints = (maxDiscount * 100).toInt()
                 val maxUsablePoints = min(availablePoints, maxPoints)
 
@@ -400,13 +400,15 @@ class PaymentDetailActivity : AppCompatActivity() {
 
                 // Store points to deduct and apply discount
                 pointsToDeduct = inputPoints
-                discountApplied = inputPoints * 0.01
+                discountApplied = inputPoints * 0.5
                 actualPay = totalPrice + fee - discountApplied
 
                 // Update UI to show points used and discount
                 binding.linearLayoutPoint.visibility = View.VISIBLE
                 binding.tvPointUse.text = "($inputPoints)"
-                binding.tvPointToPrice.text = "-$${String.format("%.2f", discountApplied)}"
+                val formatter = NumberFormat.getNumberInstance(Locale("vi", "VN"))
+                val pointPrice = discountApplied
+                binding.tvPointToPrice.text = "-" + formatter.format(pointPrice) + "đ"
                 updateUi(totalPriceSeats, totalPriceFood)
 
                 dialog.dismiss()
@@ -425,13 +427,25 @@ class PaymentDetailActivity : AppCompatActivity() {
         }
     }
 
-    private fun updateUi(totalPrice: Double, totalPriceOfFood: Double) {
-        binding.tvPriceOfSeat.text = String.format("$%.2f", totalPrice).replace(".", ",")
-        binding.tvFoodPrice.text = String.format("$%.2f", totalPriceOfFood).replace(".", ",")
-        fee = (totalPrice + totalPriceOfFood) * 0.01
-        binding.tvFee.text = String.format("$%.2f", fee).replace(".", ",")
-        actualPay = totalPrice + totalPriceOfFood + fee - discountApplied
-        binding.tvActualPay.text = String.format("$%.2f", actualPay).replace(".", ",")
+    private fun updateUi(totalPriceSeats: Double, totalPriceFood: Double) {
+        val formatter = NumberFormat.getNumberInstance(Locale("vi", "VN"))// VND không cần phần thập phân
+        formatter.maximumFractionDigits = 0
+
+        val fees = (totalPriceSeats + totalPriceFood) * 0.03
+        actualPay = totalPriceSeats + totalPriceFood + fees - discountApplied
+        fee = fees
+
+        if (actualPay < 0) {
+            Log.e("PaymentDetailActivity", "Invalid actualPay: $actualPay")
+            Toast.makeText(this, "Invalid payment amount. Please check your order.", Toast.LENGTH_LONG).show()
+            binding.btnContinue.isEnabled = false
+            return
+        }
+
+        binding.tvPriceOfSeat.text = formatter.format(totalPriceSeats.toLong()) + " đ"
+        binding.tvFoodPrice.text = formatter.format(totalPriceFood.toLong()) + " đ"
+        binding.tvFee.text = formatter.format(fees.toLong()) + " đ"
+        binding.tvActualPay.text = formatter.format(actualPay.toLong()) + " đ"
 
         val intent = Intent("UPDATE_CART")
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent)
@@ -657,7 +671,7 @@ class PaymentDetailActivity : AppCompatActivity() {
             try {
                 val response = apiInterface.getPaymentIntents(
                     customerId,
-                    ((actualPay - discountApplied) * 100).toInt().toString()
+                    (actualPay - discountApplied).toInt().toString()
                 ).execute()
                 if (response.isSuccessful) {
                     clientSecretKey = response.body()?.client_secret
@@ -834,7 +848,7 @@ class PaymentDetailActivity : AppCompatActivity() {
                 }
 
                 override fun onSlide(customSheet: View, slideOffset: Float) {
-                    if (slideOffset < 0.01) dialog.dismiss()
+                    if (slideOffset < 0.03) dialog.dismiss()
                     Log.d("BottomSheet", "Slide offset: $slideOffset")
                 }
             })
@@ -879,7 +893,7 @@ class PaymentDetailActivity : AppCompatActivity() {
                 }
 
                 override fun onSlide(customSheet: View, slideOffset: Float) {
-                    if (slideOffset < 0.01) dialog.dismiss()
+                    if (slideOffset < 0.03) dialog.dismiss()
                     Log.d("BottomSheet", "Slide offset: $slideOffset")
                 }
             })

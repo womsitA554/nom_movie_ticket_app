@@ -3,7 +3,7 @@
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="map_api_key">AIzaSyD3Db59GDN0ShIhp01FWlEIH_PjE3TaoFU</string>
     <string name="notification_permission_text">
-    Allow <b>Notification Permissions</b> to send you notifications
+    Cho phép <b>quyền thông báo</b> gửi thông báo cho bạn
 </string>
 
 </resources>

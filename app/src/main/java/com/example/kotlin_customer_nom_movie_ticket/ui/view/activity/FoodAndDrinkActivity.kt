@@ -31,6 +31,8 @@ import com.example.kotlin_customer_nom_movie_ticket.util.SessionManager
 import com.example.kotlin_customer_nom_movie_ticket.viewmodel.FoodViewModel
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
+import java.text.NumberFormat
+import java.util.Locale
 
 class FoodAndDrinkActivity : AppCompatActivity() {
     private lateinit var binding: ActivityFoodAndDrinkBinding
@@ -120,8 +122,6 @@ class FoodAndDrinkActivity : AppCompatActivity() {
         }
         LocalBroadcastManager.getInstance(this).registerReceiver(broadcastReceiver, intentFilter)
 
-        // Fetch dữ liệu
-        foodViewModel.fetchAllPopularFood()
         foodViewModel.fetchAllFood()
         foodViewModel.fetchAllDrink()
         foodViewModel.fetchAllCombo()
@@ -218,15 +218,6 @@ class FoodAndDrinkActivity : AppCompatActivity() {
         seatPrice: String?, seatName: String?, ticketIds: ArrayList<String>?,
         selectedSeatIds: ArrayList<String>?
     ) {
-        foodViewModel.popularFood.observe(this) { foodList ->
-            isPopularFoodLoaded = true
-            foodAdapter = FoodAdapter(foodList, false)
-            binding.rcvPopular.adapter = foodAdapter
-            foodAdapter.onClickItem = { food, _ ->
-                showBottomSheetDialog(food.itemId, food.picUrl, food.title, food.description, food.price ?: 9.00)
-            }
-            checkAllDataLoaded()
-        }
 
         foodViewModel.food.observe(this) { foodList ->
             isFoodLoaded = true
@@ -294,11 +285,10 @@ class FoodAndDrinkActivity : AppCompatActivity() {
     }
 
     private fun checkAllDataLoaded() {
-        if (isPopularFoodLoaded && isFoodLoaded && isDrinkLoaded && isComboLoaded) {
+        if (isFoodLoaded && isDrinkLoaded && isComboLoaded) {
             // Tất cả dữ liệu đã load, cập nhật UI
             stopAnimation()
             binding.scrollView.visibility = View.VISIBLE
-            binding.rcvPopular.visibility = View.VISIBLE
             binding.rcvFood.visibility = View.VISIBLE
             binding.rcvDrink.visibility = View.VISIBLE
             binding.rcvCombo.visibility = View.VISIBLE
@@ -335,7 +325,9 @@ class FoodAndDrinkActivity : AppCompatActivity() {
     }
 
     private fun updateCartUI() {
-        binding.tvTotalPrice.text = "$${String.format("%.2f", cartManager.totalPriceOfCart(userId))}"
+        val formatter = NumberFormat.getNumberInstance(Locale("vi", "VN"))
+        val totalPrice = cartManager.totalPriceOfCart(userId)
+        binding.tvTotalPrice.text = formatter.format(totalPrice) + "đ"
         val cartItems = cartManager.getCart(userId)
         listCart.clear()
         listCart.addAll(cartItems)
@@ -353,9 +345,6 @@ class FoodAndDrinkActivity : AppCompatActivity() {
 
     private fun setupRecycleView() {
         val spaceInPixels = resources.getDimensionPixelSize(R.dimen.item_spacing)
-        binding.rcvPopular.setHasFixedSize(true)
-        binding.rcvPopular.layoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
-        binding.rcvPopular.addItemDecoration(HorizontalSpaceItemDecoration(spaceInPixels))
         binding.rcvFood.setHasFixedSize(true)
         binding.rcvFood.layoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
         binding.rcvFood.addItemDecoration(HorizontalSpaceItemDecoration(spaceInPixels))
@@ -383,17 +372,17 @@ class FoodAndDrinkActivity : AppCompatActivity() {
         tvTitle?.text = title
         tvDescription?.text = description
         tvQuantity?.text = quantity.toString()
-        btnContinue?.text = "Add to cart - $${String.format("%.2f", price * quantity)}"
+        btnContinue?.text = "Thêm vào giỏ hàng - ${String.format("%.2f", price * quantity).toInt()}đ"
         btnAdd?.setOnClickListener {
             quantity++
             tvQuantity?.text = quantity.toString()
-            btnContinue?.text = "Add to cart - $${String.format("%.2f", price * quantity)}"
+            btnContinue?.text = "Thêm vào giỏ hàng - ${String.format("%.2f", price * quantity).toInt()}đ}"
         }
         btnRemove?.setOnClickListener {
             if (quantity > 1) {
                 quantity--
                 tvQuantity?.text = quantity.toString()
-                btnContinue?.text = "Add to cart - $${String.format("%.2f", price * quantity)}"
+                btnContinue?.text = "Thêm vào giỏ hàng - ${String.format("%.2f", price * quantity).toInt()}đ}"
             }
         }
         btnCancel?.setOnClickListener {
@@ -491,7 +480,7 @@ class FoodAndDrinkActivity : AppCompatActivity() {
         super.onDestroy()
         LocalBroadcastManager.getInstance(this).unregisterReceiver(broadcastReceiver)
         countDownTimer.cancel()
-        stopAnimation() // Dừng và ẩn progressBar khi activity bị hủy
+        stopAnimation()
     }
 
     companion object {

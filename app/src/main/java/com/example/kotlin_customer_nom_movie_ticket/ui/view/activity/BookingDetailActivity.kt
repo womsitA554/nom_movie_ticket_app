@@ -7,6 +7,8 @@ import com.bumptech.glide.Glide
 import com.example.kotlin_customer_nom_movie_ticket.R
 import com.example.kotlin_customer_nom_movie_ticket.data.model.Booking
 import com.example.kotlin_customer_nom_movie_ticket.databinding.ActivityBookingDetailBinding
+import java.text.NumberFormat
+import java.util.Locale
 
 class BookingDetailActivity : AppCompatActivity() {
     private lateinit var binding: ActivityBookingDetailBinding
@@ -25,6 +27,8 @@ class BookingDetailActivity : AppCompatActivity() {
             Log.d("BookingDetailActivity", "Booking data: $booking")
         }
 
+        val formatter = NumberFormat.getNumberInstance(Locale("vi", "VN"))
+
         Glide.with(this)
             .load(booking.poster_url)
             .into(binding.picMovie)
@@ -40,14 +44,14 @@ class BookingDetailActivity : AppCompatActivity() {
         binding.tvSeats.text = booking.seat_ids.joinToString()
         binding.tvDate.text = booking.date
         binding.tvShowtimeTime.text = booking.time
-        binding.tvFee.text = "$"+ booking.convenience_fee
-        binding.tvActualPay.text = "$"+ booking.total_price
-        binding.tvTotalPrice.text = "$"+ booking.total_price
+        binding.tvFee.text = formatter.format(booking.convenience_fee) + "đ"
+        binding.tvActualPay.text = formatter.format(booking.total_price) + "đ"
+        binding.tvTotalPrice.text = formatter.format(booking.total_price) + "đ"
         binding.tvStatusPayment.text = booking.payment_status
         binding.tvPaymentMethod.text = booking.payment_method
         binding.tvBookingId.text = booking.bill_id
-        binding.tvPriceOfSeat.text = "$"+ booking.seat_price
-        binding.tvPriceOfFood.text = "$"+ booking.food_price
+        binding.tvPriceOfSeat.text = formatter.format(booking.seat_price) + "đ"
+        binding.tvPriceOfFood.text = formatter.format(booking.food_price) + "đ"
 
         binding.btnViewTicket.setOnClickListener {
             val intent = android.content.Intent(this, ViewTicketActivity::class.java)

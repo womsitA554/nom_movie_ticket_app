@@ -2,6 +2,7 @@ package com.example.kotlin_customer_nom_movie_ticket.data.model
 
 data class Cinema(
     val address: String = "",
+    val arena: String = "",
     val cinema_id: String = "",
     val cinema_name: String = "",
     val created_at: String = "",

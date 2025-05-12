@@ -35,7 +35,7 @@
                 android:layout_weight="1"
                 android:fontFamily="@font/urbanist_bold"
                 android:gravity="center"
-                android:text="My Tickets"
+                android:text="Vé của tôi"
                 style="@style/TextColor"
                 android:textSize="23sp"
                 android:textStyle="bold" />
@@ -67,7 +67,7 @@
                 android:gravity="center"
                 android:paddingBottom="10dp"
                 android:background="@drawable/my_ticket_orange_background"
-                android:text="Upcoming" />
+                android:text="Sắp tới" />
 
             <TextView
                 android:id="@+id/btnPassed"
@@ -80,7 +80,7 @@
                 android:gravity="center"
                 android:paddingBottom="10dp"
                 android:background="@drawable/my_ticket_grey_background"
-                android:text="Passed" />
+                android:text="Đã qua" />
 
         </LinearLayout>
 

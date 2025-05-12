@@ -16,7 +16,7 @@
         android:background="@drawable/button_book_now_background"
         android:elevation="0dp"
         android:letterSpacing="0.1"
-        android:text="View ticket"
+        android:text="Tiếp tục"
         android:textColor="@color/white"
         android:textStyle="bold"
         app:layout_constraintBottom_toBottomOf="parent"

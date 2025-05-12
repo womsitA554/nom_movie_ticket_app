@@ -1,5 +1,6 @@
 package com.example.kotlin_customer_nom_movie_ticket.ui.view.activity
 
+import android.content.Context
 import android.content.Intent
 import android.graphics.Rect
 import android.os.Bundle
@@ -24,6 +25,7 @@ import com.example.kotlin_customer_nom_movie_ticket.viewmodel.DirectorViewModel
 import com.example.kotlin_customer_nom_movie_ticket.viewmodel.TicketViewModel
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
+import com.google.auth.oauth2.GoogleCredentials
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
@@ -31,6 +33,16 @@ import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.GenericTypeIndicator
 import com.google.firebase.database.MutableData
 import com.google.firebase.database.Transaction
+import com.google.firebase.messaging.FirebaseMessaging
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import okhttp3.RequestBody.Companion.toRequestBody
+import org.json.JSONObject
+import java.io.IOException
 
 class NowPlayingDetailActivity : AppCompatActivity() {
     private lateinit var binding: ActivityNowPlayingDetailBinding
@@ -388,5 +400,79 @@ class NowPlayingDetailActivity : AppCompatActivity() {
                 outRect.left = if (parent.getChildAdapterPosition(view) == 0) spacing else 0
             }
         })
+    }
+
+    fun sendNotificationWithFCMv1(context: Context, recipientToken: String, senderName: String, messageText: String) {
+        FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
+            if (!task.isSuccessful) {
+                Log.e("FCM", "Lấy token thất bại", task.exception)
+                return@addOnCompleteListener
+            }
+            val token = task.result
+            Log.d("FCM", "Token của thiết bị: $token")
+        }
+        CoroutineScope(Dispatchers.IO).launch {
+            val projectId = "shoponline-f6905"
+
+            val googleCredentials = try {
+                val inputStream = context.assets.open("service-account.json")
+                GoogleCredentials.fromStream(inputStream)
+                    .createScoped(listOf("https://www.googleapis.com/auth/firebase.messaging"))
+            } catch (e: IOException) {
+                Log.e("RoomChatViewModel", "Error reading service-account.json", e)
+                return@launch
+            }
+
+            try {
+                googleCredentials.refreshIfExpired()
+            } catch (e: IOException) {
+                Log.e("RoomChatViewModel", "Error refreshing Google credentials", e)
+                return@launch
+            }
+
+            val accessToken = googleCredentials.accessToken.tokenValue
+
+            val notificationJson = JSONObject().apply {
+                put("title", senderName)
+                put("body", messageText)
+            }
+
+            val dataJson = JSONObject().apply {
+                put("title", senderName)
+                put("message", messageText)
+            }
+
+            val messageJson = JSONObject().apply {
+                put("token", recipientToken)
+                put("notification", notificationJson)
+                put("data", dataJson)
+            }
+
+            val requestBodyJson = JSONObject().apply {
+                put("message", messageJson)
+            }
+
+            val client = OkHttpClient()
+            val mediaType = "application/json; UTF-8".toMediaTypeOrNull()
+            val requestBody = requestBodyJson.toString().toRequestBody(mediaType)
+
+            val request = Request.Builder()
+                .url("https://fcm.googleapis.com/v1/projects/$projectId/messages:send")
+                .addHeader("Authorization", "Bearer $accessToken")
+                .addHeader("Content-Type", "application/json; UTF-8")
+                .post(requestBody)
+                .build()
+
+            try {
+                val response = client.newCall(request).execute()
+                if (response.isSuccessful) {
+                    Log.d("RoomChatViewModel", "Notification sent successfully!")
+                } else {
+                    Log.e("RoomChatViewModel", "Error sending notification: ${response.message}")
+                }
+            } catch (e: IOException) {
+                Log.e("RoomChatViewModel", "Error executing FCM request", e)
+            }
+        }
     }
 }

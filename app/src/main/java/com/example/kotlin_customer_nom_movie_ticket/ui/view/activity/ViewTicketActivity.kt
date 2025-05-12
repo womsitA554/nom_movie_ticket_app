@@ -30,6 +30,7 @@ import com.example.kotlin_customer_nom_movie_ticket.databinding.ActivityViewTick
 import com.example.kotlin_customer_nom_movie_ticket.viewmodel.TicketViewModel
 import java.io.File
 import java.io.FileOutputStream
+import java.text.NumberFormat
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -66,10 +67,11 @@ class ViewTicketActivity : AppCompatActivity() {
         Glide.with(this)
             .load(moviePoster)
             .into(binding.picMovie)
+        val formatter = NumberFormat.getNumberInstance(Locale("vi", "VN"))
 
         binding.tvDirectorName.text = movieDirector
         binding.tvGenre.text = movieGenre
-        binding.tvPrice.text = "$${String.format("%.2f", totalPrice)}"
+        binding.tvPrice.text = formatter.format(totalPrice) + "đ"
         binding.tvBillId.text = billId
         binding.tvAgeRate.text = movieAgeRating
         binding.tvCinemaName.text = cinemaName

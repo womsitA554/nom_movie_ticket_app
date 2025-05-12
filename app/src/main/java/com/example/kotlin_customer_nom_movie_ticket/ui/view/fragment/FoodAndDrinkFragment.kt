@@ -36,6 +36,8 @@ import com.example.kotlin_customer_nom_movie_ticket.util.SessionManager
 import com.example.kotlin_customer_nom_movie_ticket.viewmodel.FoodViewModel
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
+import java.text.NumberFormat
+import java.util.Locale
 
 class FoodAndDrinkFragment : Fragment() {
     private var _binding: FragmentFoodAndDrinkBinding? = null
@@ -94,8 +96,6 @@ class FoodAndDrinkFragment : Fragment() {
         }
         LocalBroadcastManager.getInstance(requireContext()).registerReceiver(broadcastReceiver, intentFilter)
 
-        // Fetch dữ liệu
-        foodViewModel.fetchAllPopularFood()
         foodViewModel.fetchAllFood()
         foodViewModel.fetchAllDrink()
         foodViewModel.fetchAllCombo()
@@ -105,15 +105,6 @@ class FoodAndDrinkFragment : Fragment() {
     }
 
     private fun setupObservers() {
-        foodViewModel.popularFood.observe(viewLifecycleOwner) { foodList ->
-            isPopularFoodLoaded = true
-            foodAdapter = FoodAdapter(foodList, false)
-            binding.rcvPopular.adapter = foodAdapter
-            foodAdapter.onClickItem = { food, _ ->
-                showBottomSheetDialog(food.itemId, food.picUrl, food.title, food.description, food.price ?: 9.00)
-            }
-            checkAllDataLoaded()
-        }
 
         foodViewModel.food.observe(viewLifecycleOwner) { foodList ->
             isFoodLoaded = true
@@ -148,7 +139,7 @@ class FoodAndDrinkFragment : Fragment() {
     }
 
     private fun checkAllDataLoaded() {
-        if (isPopularFoodLoaded && isFoodLoaded && isDrinkLoaded && isComboLoaded) {
+        if (isFoodLoaded && isDrinkLoaded && isComboLoaded) {
             // Tất cả dữ liệu đã load, cập nhật UI
             stopAnimation()
             binding.scrollView.visibility = View.VISIBLE
@@ -184,11 +175,6 @@ class FoodAndDrinkFragment : Fragment() {
     private fun setupRecycleView() {
         val spaceInPixels = resources.getDimensionPixelSize(R.dimen.item_spacing)
 
-        binding.rcvPopular.setHasFixedSize(true)
-        binding.rcvPopular.layoutManager =
-            LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
-        binding.rcvPopular.addItemDecoration(HorizontalSpaceItemDecoration(spaceInPixels))
-
         binding.rcvFood.setHasFixedSize(true)
         binding.rcvFood.layoutManager =
             LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
@@ -223,20 +209,20 @@ class FoodAndDrinkFragment : Fragment() {
         tvTitle?.text = title
         tvDescription?.text = description
         tvQuantity?.text = quantity.toString()
-        btnContinue?.text = "Add to cart - $${String.format("%.2f", price * quantity)}"
-
+        val formatter = NumberFormat.getNumberInstance(Locale("vi", "VN"))
+        btnContinue?.text = "Thêm vào giỏ hàng - ${formatter.format((price * quantity).toInt())}đ"
         btnAdd?.setOnClickListener {
             quantity++
             tvQuantity?.text = quantity.toString()
-            btnContinue?.text = "Add to cart - $${String.format("%.2f", price * quantity)}"
-        }
+            val formatter = NumberFormat.getNumberInstance(Locale("vi", "VN"))
+            btnContinue?.text = "Thêm vào giỏ hàng - ${formatter.format((price * quantity).toInt())}đ"        }
 
         btnRemove?.setOnClickListener {
             if (quantity > 1) {
                 quantity--
                 tvQuantity?.text = quantity.toString()
-                btnContinue?.text = "Add to cart - $${String.format("%.2f", price * quantity)}"
-            }
+                val formatter = NumberFormat.getNumberInstance(Locale("vi", "VN"))
+                btnContinue?.text = "Thêm vào giỏ hàng - ${formatter.format((price * quantity).toInt())}đ"            }
         }
 
         btnCancel?.setOnClickListener {

@@ -136,11 +136,11 @@ class ProfileFragment : Fragment() {
             showLogoutDialog()
         }
 
-        binding.btnPayment.setOnClickListener {
-            val intent = Intent(requireContext(), PaymentActivity::class.java)
-            startActivity(intent)
-            activity?.overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left)
-        }
+//        binding.btnPayment.setOnClickListener {
+//            val intent = Intent(requireContext(), PaymentActivity::class.java)
+//            startActivity(intent)
+//            activity?.overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left)
+//        }
     }
 
     private fun showLogoutDialog() {

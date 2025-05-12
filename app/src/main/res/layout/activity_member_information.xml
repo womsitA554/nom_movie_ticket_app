@@ -50,7 +50,7 @@
                     android:layout_weight="1"
                     android:fontFamily="@font/urbanist_bold"
                     android:gravity="center"
-                    android:text="Point Info"
+                    android:text="Thông tin điểm"
                     android:textSize="23sp"
                     android:textStyle="bold" />
 
@@ -140,7 +140,7 @@
                     android:layout_marginStart="5sp"
                     android:layout_weight="1"
                     android:fontFamily="@font/urbanist_regular"
-                    android:text="nomPoint will expire on"
+                    android:text="nomPoint sẽ hết hạn vào"
                     android:textSize="12sp" />
 
                 <TextView
@@ -163,7 +163,7 @@
                 android:layout_marginStart="20sp"
                 android:layout_marginTop="15dp"
                 android:fontFamily="@font/urbanist_bold"
-                android:text="Reward point history"
+                android:text="Lịch sử điểm thưởng"
                 android:textSize="12sp" />
 
             <androidx.recyclerview.widget.RecyclerView
