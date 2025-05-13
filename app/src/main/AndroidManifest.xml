@@ -43,10 +43,10 @@
 
         <meta-data
             android:name="com.google.firebase.messaging.default_notification_icon"
-            android:resource="@drawable/logo_mini" />
+            android:resource="@drawable/bell_icon" />
         <meta-data
             android:name="com.google.firebase.messaging.default_notification_color"
-            android:resource="@color/white" />
+            android:resource="@color/orange" />
 
         <activity
             android:name=".ui.view.activity.CinemaDetailFromBookNowActivity"

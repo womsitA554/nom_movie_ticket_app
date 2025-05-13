@@ -40,6 +40,7 @@ import com.example.kotlin_customer_nom_movie_ticket.ui.view.activity.OrderFoodDe
 import com.example.kotlin_customer_nom_movie_ticket.util.SessionManager
 import com.example.kotlin_customer_nom_movie_ticket.viewmodel.TicketViewModel
 import com.google.auth.oauth2.GoogleCredentials
+import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.messaging.FirebaseMessaging
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -327,6 +328,7 @@ class UpcomingTicketFragment : Fragment() {
 
     private fun scheduleNotification(booking: Booking) {
         val prefs = requireContext().getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
+        val userId = context?.let { SessionManager.getUserId(it).toString() }
         if (!prefs.getBoolean("notifications_enabled", true)) {
             Log.d("UpcomingTicketFragment", "Notifications disabled, skipping schedule")
             return
@@ -350,8 +352,8 @@ class UpcomingTicketFragment : Fragment() {
             if (task.isSuccessful) {
                 val token = task.result
                 val data = Data.Builder()
-                    .putString("title", "Movie Reminder")
-                    .putString("message", "Your movie '${booking.title}' starts in 30 minutes at ${booking.cinema_name}!")
+                    .putString("title", "Sắp Đến Giờ Chiếu ${booking.title}!")
+                    .putString("message", "${booking.title} bắt đầu sau 30 phút tại ${booking.cinema_name ?: "rạp chiếu"}. Đừng đến muộn!")
                     .putString("token", token)
                     .build()
                 val workRequest = OneTimeWorkRequestBuilder<NotificationWorker>()
@@ -362,6 +364,27 @@ class UpcomingTicketFragment : Fragment() {
                 WorkManager.getInstance(requireContext()).enqueue(workRequest)
                 booking.isReminderEnabled = true
                 Log.d("FCM_Token", "Current device token: $token")
+
+                val database = FirebaseDatabase.getInstance().reference
+                val notificationId = userId?.let { database.child("Notifications").child(it).push().key }
+                if (notificationId != null) {
+                    val notificationData = mapOf(
+                        "notification_id" to notificationId,
+                        "title" to "NomMovie",
+                        "message" to "${booking.title} bắt đầu sau 30 phút tại ${booking.cinema_name ?: "rạp chiếu"}. Đừng đến muộn!",
+                        "timestamp" to System.currentTimeMillis(),
+                        "type" to "isReminder",
+                        "movie_id" to booking.movie_id
+                    )
+                    database.child("Notifications").child(userId).child(notificationId)
+                        .setValue(notificationData)
+                        .addOnSuccessListener {
+                            Log.d("NowPlayingDetailActivity", "Notification stored in Firebase: $notificationId")
+                        }
+                        .addOnFailureListener { e ->
+                            Log.e("NowPlayingDetailActivity", "Failed to store notification: ${e.message}")
+                        }
+                }
             } else {
                 booking.isReminderEnabled = false
                 Log.e("FCM_Token", "Failed to get token: ${task.exception?.message}")

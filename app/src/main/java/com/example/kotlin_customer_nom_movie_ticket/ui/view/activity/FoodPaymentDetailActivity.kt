@@ -45,6 +45,7 @@ import java.text.NumberFormat
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
+import java.util.TimeZone
 import kotlin.math.min
 
 class FoodPaymentDetailActivity : AppCompatActivity() {
@@ -223,7 +224,8 @@ class FoodPaymentDetailActivity : AppCompatActivity() {
         btnApply?.setOnClickListener {
             val inputPoints = etPoints?.text.toString().toIntOrNull() ?: 0
             if (inputPoints <= 0) {
-                Toast.makeText(this, "Please enter a valid number of points", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "Please enter a valid number of points", Toast.LENGTH_SHORT)
+                    .show()
                 return@setOnClickListener
             }
 
@@ -246,7 +248,11 @@ class FoodPaymentDetailActivity : AppCompatActivity() {
                 }
 
                 if (inputPoints > availablePoints) {
-                    Toast.makeText(this@FoodPaymentDetailActivity, "Not enough points", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(
+                        this@FoodPaymentDetailActivity,
+                        "Not enough points",
+                        Toast.LENGTH_SHORT
+                    ).show()
                     return@launch
                 }
 
@@ -265,7 +271,11 @@ class FoodPaymentDetailActivity : AppCompatActivity() {
                 updateUi(totalPriceOfCart, totalPriceOfCart * 0.03)
 
                 dialog.dismiss()
-                Toast.makeText(this@FoodPaymentDetailActivity, "Discount applied: $${String.format("%.2f", discountApplied)}", Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    this@FoodPaymentDetailActivity,
+                    "Discount applied: $${String.format("%.2f", discountApplied)}",
+                    Toast.LENGTH_SHORT
+                ).show()
             }
         }
 
@@ -457,7 +467,10 @@ class FoodPaymentDetailActivity : AppCompatActivity() {
         lifecycleScope.launch(Dispatchers.IO) {
             try {
                 val amountVND = (totalPriceToPay - discountApplied).toInt()
-                Log.d("PaymentIntent", "Creating PaymentIntent with customer=$customerId, amount=$amountVND, currency=vnd")
+                Log.d(
+                    "PaymentIntent",
+                    "Creating PaymentIntent with customer=$customerId, amount=$amountVND, currency=vnd"
+                )
                 val response = apiInterface.getPaymentIntents(
                     customer = customerId,
                     amount = amountVND.toString(),
@@ -474,7 +487,10 @@ class FoodPaymentDetailActivity : AppCompatActivity() {
                     }
                 } else {
                     withContext(Dispatchers.Main) {
-                        Log.e("getPaymentIntent", "Failed to get payment intent: ${response.code()}")
+                        Log.e(
+                            "getPaymentIntent",
+                            "Failed to get payment intent: ${response.code()}"
+                        )
                         Toast.makeText(
                             applicationContext,
                             "Failed to initialize payment: ${response.code()}",
@@ -485,13 +501,16 @@ class FoodPaymentDetailActivity : AppCompatActivity() {
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
                     Log.e("getPaymentIntent", "Error: ${e.message}")
-                    Toast.makeText(applicationContext,
+                    Toast.makeText(
+                        applicationContext,
                         "Error initializing payment: ${e.message}",
-                        Toast.LENGTH_LONG).show()
+                        Toast.LENGTH_LONG
+                    ).show()
                 }
             }
         }
     }
+
     private fun onPaymentSheetResult(paymentSheetResult: PaymentSheetResult) {
         when (paymentSheetResult) {
             is PaymentSheetResult.Completed -> {
@@ -499,7 +518,13 @@ class FoodPaymentDetailActivity : AppCompatActivity() {
                 if (pointsToDeduct > 0) {
                     viewModel.deductCustomerPoints(userId, pointsToDeduct)
                 }
-                viewModel.saveFoodBooking("", cartManager, userId, totalPriceToPay - discountApplied, pickUpTime)
+                viewModel.saveFoodBooking(
+                    "",
+                    cartManager,
+                    userId,
+                    totalPriceToPay - discountApplied,
+                    pickUpTime
+                )
                 Log.d("PaymentSheetResult", "Payment completed")
             }
 
@@ -547,24 +572,28 @@ class FoodPaymentDetailActivity : AppCompatActivity() {
         val btnPickUpLater = dialog.findViewById<LinearLayout>(R.id.btnPickUpLater)
 
         btnPickUpNow?.setOnClickListener {
+            Log.d("PickUpNow", "Picked up now")
             dialog.dismiss()
+
+            val calendar  = Calendar.getInstance(TimeZone.getTimeZone("Asia/Ho_Chi_Minh"))
+            calendar.add(Calendar.MINUTE, 10)
             val currentTime =
-                SimpleDateFormat("HH:mm", Locale.getDefault()).format(Calendar.getInstance().time)
-            val dateString = "Today, ${
+                SimpleDateFormat("HH:mm", Locale("vi", "VN")).format(calendar.time)
+            val dateString = "Hôm nay, ${
                 SimpleDateFormat(
-                    "MMM dd, yyyy",
-                    Locale.getDefault()
+                    "dd MMM, yyyy",
+                    Locale("vi", "VN")
                 ).format(calendar.time)
             }"
             val dayOfWeekFormat = SimpleDateFormat("EEEE", Locale.getDefault())
 
             val dayOfWeek = "${dayOfWeekFormat.format(calendar.time)}, ${
                 SimpleDateFormat(
-                    "MMM dd, yyyy",
-                    Locale.getDefault()
+                    "dd MMM, yyyy",
+                    Locale("vi", "VN")
                 ).format(calendar.time)
             }"
-            binding.tvTimePickUp.text = "Pick up at $currentTime"
+            binding.tvTimePickUp.text = "Nhận đồ lúc $currentTime"
             binding.tvTimeValue.text = dateString
             pickUpTime = "$dayOfWeek $currentTime"
         }
@@ -580,8 +609,7 @@ class FoodPaymentDetailActivity : AppCompatActivity() {
         dialog.setContentView(R.layout.bottom_sheet_set_pick_up_time)
         dialog.show()
 
-        val bottomSheet =
-            dialog.findViewById<View>(com.google.android.material.R.id.design_bottom_sheet)
+        val bottomSheet = dialog.findViewById<View>(com.google.android.material.R.id.design_bottom_sheet)
         bottomSheet?.let {
             val behavior = BottomSheetBehavior.from(it)
             behavior.state = BottomSheetBehavior.STATE_EXPANDED
@@ -594,7 +622,6 @@ class FoodPaymentDetailActivity : AppCompatActivity() {
                 }
 
                 override fun onSlide(customSheet: View, slideOffset: Float) {
-                    if (slideOffset < 0.01) dialog.dismiss()
                     Log.d("BottomSheet", "Slide offset: $slideOffset")
                 }
             })
@@ -605,15 +632,33 @@ class FoodPaymentDetailActivity : AppCompatActivity() {
         val minutePicker = dialog.findViewById<NumberPicker>(R.id.minutePicker)
         val btnSetTime = dialog.findViewById<Button>(R.id.btnSetTime)
 
+        // Lấy thời gian hiện tại + 10 phút
+        val currentCalendar = Calendar.getInstance(TimeZone.getTimeZone("Asia/Ho_Chi_Minh"))
+        currentCalendar.add(Calendar.MINUTE, 10)
+        val minHour = currentCalendar.get(Calendar.HOUR_OF_DAY)
+        val minMinute = currentCalendar.get(Calendar.MINUTE)
+
+        // Thiết lập giá trị mặc định cho NumberPicker
         hourPicker?.minValue = 0
         hourPicker?.maxValue = 23
-        hourPicker?.value = 14
-        lastHour = hourPicker?.value ?: 14
+        // Nếu là ngày hôm nay, giới hạn giờ tối thiểu
+        if (isToday(calendar)) {
+            hourPicker?.minValue = minHour
+        }
+        hourPicker?.value = if (isToday(calendar) && lastHour < minHour) minHour else lastHour
         hourPicker?.setFormatter { value -> String.format("%02d", value) }
 
         minutePicker?.minValue = 0
         minutePicker?.maxValue = 59
-        minutePicker?.value = 30
+        // Nếu là ngày hôm nay và giờ bằng giờ tối thiểu, giới hạn phút tối thiểu
+        if (isToday(calendar) && hourPicker?.value == minHour) {
+            minutePicker?.minValue = minMinute
+        }
+        minutePicker?.value = if (isToday(calendar) && hourPicker?.value == minHour && minutePicker?.value ?: 0 < minMinute) {
+            minMinute
+        } else {
+            minutePicker?.value ?: 30
+        }
         minutePicker?.setFormatter { value -> String.format("%02d", value) }
 
         hourPicker?.let { removeSelectionDivider(it) }
@@ -626,6 +671,9 @@ class FoodPaymentDetailActivity : AppCompatActivity() {
         hourPicker?.setOnValueChangedListener { _, oldHour, newHour ->
             if (oldHour == 23 && newHour == 0) {
                 calendar.add(Calendar.DAY_OF_MONTH, 1)
+                // Khi chuyển sang ngày mới, bỏ giới hạn minValue
+                hourPicker.minValue = 0
+                minutePicker?.minValue = 0
             } else if (oldHour == 0 && newHour == 23) {
                 val newDate = calendar.clone() as Calendar
                 newDate.add(Calendar.DAY_OF_MONTH, -1)
@@ -635,9 +683,26 @@ class FoodPaymentDetailActivity : AppCompatActivity() {
                         todayCalendar.get(Calendar.MONTH),
                         todayCalendar.get(Calendar.DAY_OF_MONTH)
                     )
+                    // Áp dụng lại giới hạn nếu quay lại ngày hôm nay
+                    hourPicker.minValue = minHour
+                    if (newHour == minHour) {
+                        minutePicker?.minValue = minMinute
+                        if (minutePicker?.value ?: 0 < minMinute) {
+                            minutePicker?.value = minMinute
+                        }
+                    }
                 } else {
                     calendar.add(Calendar.DAY_OF_MONTH, -1)
                 }
+            }
+            // Nếu chọn giờ bằng giờ tối thiểu trong ngày hôm nay, giới hạn phút
+            if (isToday(calendar) && newHour == minHour) {
+                minutePicker?.minValue = minMinute
+                if (minutePicker?.value ?: 0 < minMinute) {
+                    minutePicker?.value = minMinute
+                }
+            } else {
+                minutePicker?.minValue = 0
             }
             lastHour = newHour
             if (dateText != null && minutePicker != null) {
@@ -647,24 +712,37 @@ class FoodPaymentDetailActivity : AppCompatActivity() {
 
         minutePicker?.setOnValueChangedListener { _, _, newMinute ->
             if (dateText != null && hourPicker != null) {
-                updateDateText(dateText, hourPicker.value, newMinute)
+                // Nếu thời gian không hợp lệ (trong ngày hôm nay, nhỏ hơn minHour:minMinute), điều chỉnh lại
+                if (isToday(calendar) && hourPicker.value == minHour && newMinute < minMinute) {
+                    minutePicker.value = minMinute
+                }
+                updateDateText(dateText, hourPicker.value, minutePicker.value)
             }
         }
 
         btnSetTime?.setOnClickListener {
-            val selectedDate =
-                SimpleDateFormat("MMM dd, yyyy", Locale.getDefault()).format(calendar.time)
-            val selectedTime = String.format("%02d:%02d", hourPicker?.value, minutePicker?.value)
+            // Kiểm tra thời gian hợp lệ trước khi lưu
+            val selectedCalendar = calendar.clone() as Calendar
+            selectedCalendar.set(Calendar.HOUR_OF_DAY, hourPicker?.value ?: 0)
+            selectedCalendar.set(Calendar.MINUTE, minutePicker?.value ?: 0)
+            if (isToday(calendar) && selectedCalendar.before(currentCalendar)) {
+                Toast.makeText(
+                    this@FoodPaymentDetailActivity,
+                    "Thời gian không hợp lệ, phải sau ${String.format("%02d:%02d", minHour, minMinute)} hôm nay",
+                    Toast.LENGTH_SHORT
+                ).show()
+                return@setOnClickListener
+            }
             updateDateText(binding.tvTimeValue, hourPicker?.value ?: 0, minutePicker?.value ?: 0)
             dialog.dismiss()
         }
     }
 
     private fun updateDateText(dateText: TextView, hour: Int, minute: Int) {
-        val dateFormat = SimpleDateFormat("MMM dd, yyyy", Locale.getDefault())
-        val dayOfWeekFormat = SimpleDateFormat("EEEE", Locale.getDefault())
+        val dateFormat = SimpleDateFormat("dd MMM, yyyy", Locale("vi", "VN")).format(calendar.time)
+        val dayOfWeekFormat = SimpleDateFormat("EEEE", Locale("vi", "VN"))
         val dateString = if (isToday(calendar)) {
-            "Today, ${dateFormat.format(calendar.time)}"
+            "Hôm nay, ${SimpleDateFormat("dd MMM, yyyy", Locale("vi", "VN")).format(calendar.time)}"
         } else {
             "${dayOfWeekFormat.format(calendar.time)}, ${dateFormat.format(calendar.time)}"
         }
@@ -674,7 +752,7 @@ class FoodPaymentDetailActivity : AppCompatActivity() {
 
         val dayOfWeek =
             "${dayOfWeekFormat.format(calendar.time)}, ${dateFormat.format(calendar.time)}"
-        binding.tvTimePickUp.text = "Pick up at $time"
+        binding.tvTimePickUp.text = "Nhận đồ lúc $time"
         binding.tvTimeValue.text = "$dateString"
         pickUpTime = "$dayOfWeek $time"
     }

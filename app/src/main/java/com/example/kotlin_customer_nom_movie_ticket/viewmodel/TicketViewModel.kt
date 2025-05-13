@@ -13,6 +13,7 @@ import com.example.kotlin_customer_nom_movie_ticket.util.CartManager
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Locale
+import java.util.TimeZone
 
 class TicketViewModel : ViewModel() {
     private val ticketRepository = TicketRepository()
@@ -96,7 +97,9 @@ class TicketViewModel : ViewModel() {
                     _passedFoodBookings.value = emptyList()
                 } else {
                     val currentTime = System.currentTimeMillis()
-                    val dateFormat = SimpleDateFormat("EEEE, MMM dd, yyyy HH:mm", Locale.ENGLISH)
+                    val dateFormat = SimpleDateFormat("EEEE, dd 'thg' M, yyyy HH:mm", Locale("vi", "VN")).apply {
+                        timeZone = TimeZone.getTimeZone("Asia/Ho_Chi_Minh")
+                    }
 
                     _upComingFoodBookings.value = allFoodBookings.filter { booking ->
                         try {

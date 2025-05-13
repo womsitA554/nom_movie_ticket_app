@@ -77,7 +77,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:fontFamily="@font/urbanist_regular"
-                android:text="Ước tính thức ăn sẽ sẵn sàng trong 15 phút."
+                android:text="Ước tính đồ ăn sẽ sẵn sàng trong 10 phút."
                 style="@style/TextColor"
                 android:textSize="15sp" />
         </LinearLayout>

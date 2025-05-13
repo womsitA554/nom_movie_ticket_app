@@ -45,7 +45,7 @@ class OrderFoodDetailActivity : AppCompatActivity() {
         val parts = pickUpTime.split(" ")
         val time = parts.last() // "11:30"
         val date = parts.dropLast(1).joinToString(" ")
-        binding.tvTimePickUp.text = "Pick up at $time"
+        binding.tvTimePickUp.text = "Nhận đồ lúc $time"
         binding.tvTimeValue.text = date
 
         val formatter = NumberFormat.getNumberInstance(Locale("vi", "VN"))

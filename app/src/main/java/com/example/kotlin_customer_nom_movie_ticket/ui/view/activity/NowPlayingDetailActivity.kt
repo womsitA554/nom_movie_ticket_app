@@ -15,11 +15,18 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import androidx.work.Data
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
 import com.airbnb.lottie.LottieAnimationView
 import com.bumptech.glide.Glide
 import com.example.kotlin_customer_nom_movie_ticket.R
+import com.example.kotlin_customer_nom_movie_ticket.data.model.Booking
+import com.example.kotlin_customer_nom_movie_ticket.data.model.Movie
 import com.example.kotlin_customer_nom_movie_ticket.databinding.ActivityNowPlayingDetailBinding
+import com.example.kotlin_customer_nom_movie_ticket.service.Notification.NotificationWorker
 import com.example.kotlin_customer_nom_movie_ticket.ui.adapter.ActorAdapter
+import com.example.kotlin_customer_nom_movie_ticket.util.SessionManager
 import com.example.kotlin_customer_nom_movie_ticket.viewmodel.ActorViewModel
 import com.example.kotlin_customer_nom_movie_ticket.viewmodel.DirectorViewModel
 import com.example.kotlin_customer_nom_movie_ticket.viewmodel.TicketViewModel
@@ -30,7 +37,6 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
-import com.google.firebase.database.GenericTypeIndicator
 import com.google.firebase.database.MutableData
 import com.google.firebase.database.Transaction
 import com.google.firebase.messaging.FirebaseMessaging
@@ -43,6 +49,7 @@ import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONObject
 import java.io.IOException
+import java.util.concurrent.TimeUnit
 
 class NowPlayingDetailActivity : AppCompatActivity() {
     private lateinit var binding: ActivityNowPlayingDetailBinding
@@ -56,12 +63,12 @@ class NowPlayingDetailActivity : AppCompatActivity() {
         binding = ActivityNowPlayingDetailBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // Khởi tạo ViewModel
+        // Initialize ViewModel
         directorViewModel = ViewModelProvider(this)[DirectorViewModel::class.java]
         actorViewModel = ViewModelProvider(this)[ActorViewModel::class.java]
         ticketViewModel = ViewModelProvider(this)[TicketViewModel::class.java]
 
-        // Lấy dữ liệu từ Intent
+        // Get data from Intent
         val movieId = intent.getStringExtra("movie_id")
         val movieCountry = intent.getStringExtra("country")
         val moviePosterUrl = intent.getStringExtra("poster_url")
@@ -82,7 +89,6 @@ class NowPlayingDetailActivity : AppCompatActivity() {
 
         if (movieDirectorId != null) {
             directorViewModel.fetchDirectorNameById(movieDirectorId)
-        } else {
         }
 
         directorViewModel.directorName.observe(this) { name ->
@@ -127,11 +133,11 @@ class NowPlayingDetailActivity : AppCompatActivity() {
             Toast.makeText(this, "Không có diễn viên nào", Toast.LENGTH_SHORT).show()
         }
 
-        // Cập nhật RatingBar
+        // Update RatingBar
         val ratingNumber = movieRating / 2
         binding.ratingBar.rating = ratingNumber
 
-        // Nút Book
+        // Book button
         binding.btnBook.setOnClickListener {
             val intent = Intent(this, ChooseCinemaActivity::class.java)
             intent.putExtra("movie_id", movieId)
@@ -164,7 +170,6 @@ class NowPlayingDetailActivity : AppCompatActivity() {
         val userId = FirebaseAuth.getInstance().currentUser?.uid
         if (userId != null) {
             ticketViewModel.fetchBookings(userId)
-        } else {
         }
     }
 
@@ -279,6 +284,7 @@ class NowPlayingDetailActivity : AppCompatActivity() {
 
                         override fun onComplete(error: DatabaseError?, committed: Boolean, currentData: DataSnapshot?) {
                             if (error != null) {
+                                Toast.makeText(this@NowPlayingDetailActivity, "Lỗi khi lưu đánh giá", Toast.LENGTH_SHORT).show()
                             } else if (committed) {
                                 userRatingRef.setValue(userRating).addOnSuccessListener {
                                     val newAverageRating = currentData?.child("average_rating")?.getValue(Float::class.java) ?: 0f
@@ -288,24 +294,27 @@ class NowPlayingDetailActivity : AppCompatActivity() {
                                     binding.tvReviewer.text = "($movieQuantityVote reviews)"
                                     dialog.dismiss()
                                     bottomSheetRateSuccess()
+                                    scheduleNotification(movieId, binding.tvTitle.text.toString())
                                 }.addOnFailureListener {
+                                    Toast.makeText(this@NowPlayingDetailActivity, "Lỗi khi lưu đánh giá", Toast.LENGTH_SHORT).show()
                                 }
-                            } else {
                             }
                         }
                     })
                 }
             }
         }.addOnFailureListener {
+            Toast.makeText(this, "Lỗi khi kiểm tra đánh giá", Toast.LENGTH_SHORT).show()
         }
     }
+
     private fun calculateTotalRating(ratingBar1: RatingBar?, ratingBar2: RatingBar?): Int {
         val rating1 = ratingBar1?.rating?.toInt() ?: 0
         val rating2 = ratingBar2?.rating?.toInt() ?: 0
         return if (rating2 > 0) 5 + rating2 else rating1
     }
 
-    private fun bottomSheetRateSuccess(){
+    private fun bottomSheetRateSuccess() {
         val dialog = BottomSheetDialog(this)
         dialog.setContentView(R.layout.bottom_sheet_rate_success)
         dialog.show()
@@ -319,6 +328,8 @@ class NowPlayingDetailActivity : AppCompatActivity() {
             behavior.peekHeight = 0
             behavior.isHideable = true
 
+            val btnOkay = dialog.findViewById<Button>(R.id.btnOkay)
+
             behavior.addBottomSheetCallback(object : BottomSheetBehavior.BottomSheetCallback() {
                 override fun onStateChanged(customSheet: View, newState: Int) {
                     if (newState == BottomSheetBehavior.STATE_HIDDEN) dialog.dismiss()
@@ -328,10 +339,14 @@ class NowPlayingDetailActivity : AppCompatActivity() {
                     if (slideOffset < 0.01) dialog.dismiss()
                 }
             })
+
+            btnOkay?.setOnClickListener {
+                dialog.dismiss()
+            }
         }
     }
 
-    private fun bottomSheetAlreadyRated(){
+    private fun bottomSheetAlreadyRated() {
         val dialog = BottomSheetDialog(this)
         val view = layoutInflater.inflate(R.layout.bottom_sheet_already_rated, null)
         dialog.setContentView(view)
@@ -402,6 +417,58 @@ class NowPlayingDetailActivity : AppCompatActivity() {
         })
     }
 
+    private fun scheduleNotification(movieId: String, movieTitle: String) {
+        val prefs = getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
+        val userId = SessionManager.getUserId(this).toString()
+        if (!prefs.getBoolean("notifications_enabled", true)) {
+            Log.d("NowPlayingDetailActivity", "Notifications disabled, skipping schedule")
+            return
+        }
+
+        FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
+            if (task.isSuccessful) {
+                val token = task.result
+                val data = Data.Builder()
+                    .putString("title", "Đánh Giá Thành Công!")
+                    .putString("message", "Cảm ơn bạn đã đánh giá $movieTitle! Bạn đã nhận được 100 điểm thưởng.")
+                    .putString("token", token)
+                    .putString("movie_id", movieId)
+                    .build()
+                val workRequest = OneTimeWorkRequestBuilder<NotificationWorker>()
+                    .setInitialDelay(0, TimeUnit.MILLISECONDS) // Immediate notification
+                    .setInputData(data)
+                    .addTag("rating_$movieId")
+                    .build()
+                WorkManager.getInstance(this).enqueue(workRequest)
+                Log.d("FCM_Token", "Current device token: $token")
+
+                val database = FirebaseDatabase.getInstance().reference
+                val notificationId = database.child("Notifications").child(userId).push().key
+                if (notificationId != null) {
+                    val notificationData = mapOf(
+                        "notification_id" to notificationId,
+                        "title" to title,
+                        "message" to "Cảm ơn bạn đã đánh giá $movieTitle! Bạn đã nhận được 100 điểm thưởng.",
+                        "timestamp" to System.currentTimeMillis(),
+                        "type" to "isReview",
+                        "movie_id" to movieId
+                    )
+                    database.child("Notifications").child(userId).child(notificationId)
+                        .setValue(notificationData)
+                        .addOnSuccessListener {
+                            Log.d("NowPlayingDetailActivity", "Notification stored in Firebase: $notificationId")
+                        }
+                        .addOnFailureListener { e ->
+                            Log.e("NowPlayingDetailActivity", "Failed to store notification: ${e.message}")
+                        }
+                }
+            } else {
+                Log.e("FCM_Token", "Failed to get token: ${task.exception?.message}")
+                Toast.makeText(this, "Không thể gửi thông báo", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
     fun sendNotificationWithFCMv1(context: Context, recipientToken: String, senderName: String, messageText: String) {
         FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
             if (!task.isSuccessful) {
@@ -419,14 +486,14 @@ class NowPlayingDetailActivity : AppCompatActivity() {
                 GoogleCredentials.fromStream(inputStream)
                     .createScoped(listOf("https://www.googleapis.com/auth/firebase.messaging"))
             } catch (e: IOException) {
-                Log.e("RoomChatViewModel", "Error reading service-account.json", e)
+                Log.e("NowPlayingDetailActivity", "Error reading service-account.json", e)
                 return@launch
             }
 
             try {
                 googleCredentials.refreshIfExpired()
             } catch (e: IOException) {
-                Log.e("RoomChatViewModel", "Error refreshing Google credentials", e)
+                Log.e("NowPlayingDetailActivity", "Error refreshing Google credentials", e)
                 return@launch
             }
 
@@ -466,12 +533,12 @@ class NowPlayingDetailActivity : AppCompatActivity() {
             try {
                 val response = client.newCall(request).execute()
                 if (response.isSuccessful) {
-                    Log.d("RoomChatViewModel", "Notification sent successfully!")
+                    Log.d("NowPlayingDetailActivity", "Notification sent successfully!")
                 } else {
-                    Log.e("RoomChatViewModel", "Error sending notification: ${response.message}")
+                    Log.e("NowPlayingDetailActivity", "Error sending notification: ${response.message}")
                 }
             } catch (e: IOException) {
-                Log.e("RoomChatViewModel", "Error executing FCM request", e)
+                Log.e("NowPlayingDetailActivity", "Error executing FCM request", e)
             }
         }
     }
