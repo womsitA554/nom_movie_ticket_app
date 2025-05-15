@@ -372,7 +372,11 @@ class FoodAndDrinkActivity : AppCompatActivity() {
         tvTitle?.text = title
         tvDescription?.text = description
         tvQuantity?.text = quantity.toString()
-        btnContinue?.text = "Thêm vào giỏ hàng - ${String.format("%.2f", price * quantity).toInt()}đ"
+        val formatter = NumberFormat.getNumberInstance(Locale("vi", "VN")).apply {
+            maximumFractionDigits = 0 // Loại bỏ phần thập phân
+        }
+        val totalPrice = (price * quantity).toLong() // Chuyển sang Long để tránh mất dữ liệu
+        btnContinue?.text = "Thêm vào giỏ hàng - ${formatter.format(totalPrice)}đ"
         btnAdd?.setOnClickListener {
             quantity++
             tvQuantity?.text = quantity.toString()

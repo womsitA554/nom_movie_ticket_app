@@ -176,7 +176,7 @@ class TicketRepository @Inject constructor() {
                 "food_price" to totalPriceFood,
                 "fee_price" to fee,
                 "total_amount" to actualPay,
-                "payment_method" to "Stripe",
+                "payment_method" to "Visa",
                 "payment_status" to "Paid",
                 "created_at" to createdAt,
                 "promotion_id" to null
@@ -222,7 +222,7 @@ class TicketRepository @Inject constructor() {
                     "customer_id" to userId,
                     "food_items" to cartItems.map { it.toMap() },
                     "total_price" to totalPriceFood,
-                    "payment_method" to "Stripe",
+                    "payment_method" to "Visa",
                     "payment_status" to "Paid",
                     "order_time" to createdAt,
                     "pick_up_time" to pickUpTime

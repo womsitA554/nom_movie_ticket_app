@@ -182,7 +182,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="10dp"
                     android:fontFamily="@font/urbanist_bold"
-                    android:text="Sorry, have not found any movie showtime."
+                    android:text="Rất tiếc, không tìm thấy xuất chiếu phim nào."
                     android:textSize="16sp"
                     android:textStyle="normal" />
 

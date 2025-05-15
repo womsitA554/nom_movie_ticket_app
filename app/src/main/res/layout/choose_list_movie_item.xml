@@ -175,7 +175,7 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:gravity="start"
-                        android:text="Genre"
+                        android:text="Thể loại"
                         style="@style/TextColor"/>
 
                     <TextView
@@ -202,7 +202,7 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="15dp"
         android:layout_marginTop="15dp"
-        android:text="Showtime"
+        android:text="Xuất chiếu"
         style="@style/TextColor"
         android:textSize="18sp"
         android:fontFamily="@font/urbanist_bold"

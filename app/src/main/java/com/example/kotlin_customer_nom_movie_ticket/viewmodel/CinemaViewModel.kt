@@ -7,21 +7,25 @@ import com.example.kotlin_customer_nom_movie_ticket.data.model.Cinema
 import com.example.kotlin_customer_nom_movie_ticket.data.model.Showtime
 import com.example.kotlin_customer_nom_movie_ticket.data.repository.CinemaRepository
 import com.example.kotlin_customer_nom_movie_ticket.data.repository.ShowtimeRepository
+import com.example.kotlin_customer_nom_movie_ticket.util.LocationUtil
+import com.example.kotlin_customer_nom_movie_ticket.util.UserLocation
 import java.time.LocalDate
 
 class CinemaViewModel : ViewModel() {
     private val cinemaRepository = CinemaRepository()
     private val showtimeRepository = ShowtimeRepository()
     private val _cinemas = MutableLiveData<List<Cinema>>()
-    var cinemas: MutableLiveData<List<Cinema>> = _cinemas
+    val cinemas: MutableLiveData<List<Cinema>> = _cinemas
     private val _cinemaName = MutableLiveData<String>()
-    var cinemaName: MutableLiveData<String> = _cinemaName
+    val cinemaName: MutableLiveData<String> = _cinemaName
     private val _showtimes = MutableLiveData<List<Showtime>>()
     val showtimes: MutableLiveData<List<Showtime>> = _showtimes
     private val _favoriteCinemas = MutableLiveData<List<String>>()
     val favoriteCinemas: MutableLiveData<List<String>> = _favoriteCinemas
     private val _favoriteCinemaList = MutableLiveData<List<Cinema>>()
     val favoriteCinemaList: MutableLiveData<List<Cinema>> = _favoriteCinemaList
+    private val _suggestedCinemas = MutableLiveData<List<Cinema>>()
+    val suggestedCinemas: MutableLiveData<List<Cinema>> = _suggestedCinemas
 
     fun fetchCinemas() {
         cinemaRepository.getAllCinemas { cinemaList ->
@@ -39,9 +43,6 @@ class CinemaViewModel : ViewModel() {
     private fun updateFavoriteCinemaList(favoriteCinemaIds: List<String>) {
         cinemaRepository.getAllCinemas { cinemaList ->
             val favoriteList = cinemaList.filter { favoriteCinemaIds.contains(it.cinema_id) }
-            Log.d("CinemaViewModel", "All Cinemas: $cinemaList")
-            Log.d("CinemaViewModel", "Favorite Cinema IDs: $favoriteCinemaIds")
-            Log.d("CinemaViewModel", "Filtered Favorite Cinemas: $favoriteList")
             _favoriteCinemaList.value = favoriteList
         }
     }
@@ -70,6 +71,27 @@ class CinemaViewModel : ViewModel() {
     fun fetchCinemaNameById(cinemaId: String) {
         cinemaRepository.getCinemaNameById(cinemaId) { name ->
             _cinemaName.value = name
+        }
+    }
+
+    fun fetchSuggestedCinemas(userLocation: UserLocation?, maxSuggestions: Int = 3) {
+        cinemaRepository.getAllCinemas { cinemaList ->
+            if (userLocation == null || cinemaList.isEmpty()) {
+                _suggestedCinemas.value = emptyList()
+                return@getAllCinemas
+            }
+            val sortedCinemas = cinemaList
+                .map { cinema ->
+                    val distance = LocationUtil.calculateDistance(
+                        userLocation.latitude, userLocation.longitude,
+                        cinema.latitude, cinema.longitude
+                    )
+                    cinema to distance
+                }
+                .sortedBy { it.second }
+                .take(maxSuggestions)
+                .map { it.first }
+            _suggestedCinemas.value = sortedCinemas
         }
     }
 }

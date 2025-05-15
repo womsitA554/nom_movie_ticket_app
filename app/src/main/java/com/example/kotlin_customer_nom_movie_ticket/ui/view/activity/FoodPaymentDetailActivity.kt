@@ -156,13 +156,13 @@ class FoodPaymentDetailActivity : AppCompatActivity() {
 
         binding.btnContinue.setOnClickListener {
             if (pickUpTime.isEmpty()) {
-                Toast.makeText(this, "Please choose a pick-up time", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "Vui lòng chọn thời gian nhận đồ", Toast.LENGTH_SHORT).show()
             } else {
                 if (clientSecretKey != null) {
                     paymentFlow()
                 } else {
                     Log.e("PaymentFlow", "Client secret key is not initialized")
-                    Toast.makeText(this, "Payment not ready, please wait", Toast.LENGTH_SHORT)
+                    Toast.makeText(this, "Thanh toán chưa sẵn sàng, vui lòng đợi", Toast.LENGTH_SHORT)
                         .show()
                 }
             }
@@ -224,7 +224,7 @@ class FoodPaymentDetailActivity : AppCompatActivity() {
         btnApply?.setOnClickListener {
             val inputPoints = etPoints?.text.toString().toIntOrNull() ?: 0
             if (inputPoints <= 0) {
-                Toast.makeText(this, "Please enter a valid number of points", Toast.LENGTH_SHORT)
+                Toast.makeText(this, "Vui lòng nhập số điểm hợp lệ", Toast.LENGTH_SHORT)
                     .show()
                 return@setOnClickListener
             }
@@ -241,7 +241,7 @@ class FoodPaymentDetailActivity : AppCompatActivity() {
                 if (inputPoints > maxUsablePoints) {
                     Toast.makeText(
                         this@FoodPaymentDetailActivity,
-                        "Cannot use more than $maxUsablePoints points for this order",
+                        "Không thể sử dụng nhiều hơn $maxUsablePoints điểm cho đơn hàng nàyer",
                         Toast.LENGTH_SHORT
                     ).show()
                     return@launch
@@ -632,16 +632,13 @@ class FoodPaymentDetailActivity : AppCompatActivity() {
         val minutePicker = dialog.findViewById<NumberPicker>(R.id.minutePicker)
         val btnSetTime = dialog.findViewById<Button>(R.id.btnSetTime)
 
-        // Lấy thời gian hiện tại + 10 phút
         val currentCalendar = Calendar.getInstance(TimeZone.getTimeZone("Asia/Ho_Chi_Minh"))
         currentCalendar.add(Calendar.MINUTE, 10)
         val minHour = currentCalendar.get(Calendar.HOUR_OF_DAY)
         val minMinute = currentCalendar.get(Calendar.MINUTE)
 
-        // Thiết lập giá trị mặc định cho NumberPicker
         hourPicker?.minValue = 0
         hourPicker?.maxValue = 23
-        // Nếu là ngày hôm nay, giới hạn giờ tối thiểu
         if (isToday(calendar)) {
             hourPicker?.minValue = minHour
         }
@@ -650,7 +647,6 @@ class FoodPaymentDetailActivity : AppCompatActivity() {
 
         minutePicker?.minValue = 0
         minutePicker?.maxValue = 59
-        // Nếu là ngày hôm nay và giờ bằng giờ tối thiểu, giới hạn phút tối thiểu
         if (isToday(calendar) && hourPicker?.value == minHour) {
             minutePicker?.minValue = minMinute
         }
@@ -683,7 +679,6 @@ class FoodPaymentDetailActivity : AppCompatActivity() {
                         todayCalendar.get(Calendar.MONTH),
                         todayCalendar.get(Calendar.DAY_OF_MONTH)
                     )
-                    // Áp dụng lại giới hạn nếu quay lại ngày hôm nay
                     hourPicker.minValue = minHour
                     if (newHour == minHour) {
                         minutePicker?.minValue = minMinute
@@ -695,7 +690,6 @@ class FoodPaymentDetailActivity : AppCompatActivity() {
                     calendar.add(Calendar.DAY_OF_MONTH, -1)
                 }
             }
-            // Nếu chọn giờ bằng giờ tối thiểu trong ngày hôm nay, giới hạn phút
             if (isToday(calendar) && newHour == minHour) {
                 minutePicker?.minValue = minMinute
                 if (minutePicker?.value ?: 0 < minMinute) {

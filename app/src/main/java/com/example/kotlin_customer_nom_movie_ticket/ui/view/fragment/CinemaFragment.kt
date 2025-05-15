@@ -43,7 +43,7 @@ class CinemaFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         binding.progressBar.visibility = View.VISIBLE
-        binding.progressBar.playAnimation() // Bắt đầu animation
+        binding.progressBar.playAnimation()
         binding.rcvAllCinema.visibility = View.GONE
         binding.tvChooseArena.visibility = View.GONE
 
@@ -79,21 +79,6 @@ class CinemaFragment : Fragment() {
             movieLanguage, movieDuration, movieGenre, movieSynopsis, movieDirectorId,
             movieStatus, movieTrailerUrl, movieActorIds, movieAgeRating, movieRating, movieBanner
         )
-
-        lifecycleScope.launch {
-            delay(10000)
-            if (!isCinemasLoaded || !isFavoriteCinemasLoaded) {
-                if (!isCinemasLoaded) {
-                    Toast.makeText(requireContext(), "Timeout loading cinemas", Toast.LENGTH_SHORT).show()
-                    isCinemasLoaded = true
-                }
-                if (!isFavoriteCinemasLoaded) {
-                    Toast.makeText(requireContext(), "Timeout loading favorite cinemas", Toast.LENGTH_SHORT).show()
-                    isFavoriteCinemasLoaded = true
-                }
-                checkAllDataLoaded()
-            }
-        }
     }
 
     private fun setupObservers(
@@ -203,7 +188,6 @@ class CinemaFragment : Fragment() {
 
     private fun checkAllDataLoaded() {
         if (isCinemasLoaded && isFavoriteCinemasLoaded) {
-            // Tất cả dữ liệu đã load, cập nhật UI
             stopAnimation()
             binding.rcvAllCinema.visibility = View.VISIBLE
             binding.tvChooseArena.visibility = View.VISIBLE
@@ -212,8 +196,8 @@ class CinemaFragment : Fragment() {
     }
 
     private fun stopAnimation() {
-        binding.progressBar.cancelAnimation() // Dừng animation
-        binding.progressBar.visibility = View.GONE // Ẩn progressBar
+        binding.progressBar.cancelAnimation()
+        binding.progressBar.visibility = View.GONE
     }
 
     private fun setupRecycleView() {
@@ -223,7 +207,7 @@ class CinemaFragment : Fragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
-        stopAnimation() // Dừng và ẩn progressBar khi fragment bị hủy
+        stopAnimation()
         _binding = null
     }
 }

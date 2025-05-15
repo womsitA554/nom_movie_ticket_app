@@ -77,7 +77,7 @@ class ViewTicketActivity : AppCompatActivity() {
         binding.tvCinemaName.text = cinemaName
         binding.tvMovieTitle.text = movieTitle
         binding.tvSeats.text = seatName
-        binding.tvDuration.text = "$movieDuration minutes"
+        binding.tvDuration.text = "$movieDuration phút"
         binding.tvRoomName.text = movieRoomName
 
         if (showtimeTime != null) {

@@ -35,6 +35,7 @@ import com.example.kotlin_customer_nom_movie_ticket.ui.adapter.MovieIsShowingAda
 import com.example.kotlin_customer_nom_movie_ticket.ui.view.activity.ChooseCinemaActivity
 import com.example.kotlin_customer_nom_movie_ticket.ui.view.activity.ComingSoonActivity
 import com.example.kotlin_customer_nom_movie_ticket.ui.view.activity.ComingSoonDetailActivity
+import com.example.kotlin_customer_nom_movie_ticket.ui.view.activity.NotificationActivity
 import com.example.kotlin_customer_nom_movie_ticket.ui.view.activity.NowPlayingActivity
 import com.example.kotlin_customer_nom_movie_ticket.ui.view.activity.NowPlayingDetailActivity
 import com.example.kotlin_customer_nom_movie_ticket.util.SessionManager
@@ -123,6 +124,12 @@ class HomeFragment : Fragment() {
 
         binding.btnViewAllComingSoon.setOnClickListener {
             val intent = Intent(requireContext(), ComingSoonActivity::class.java)
+            startActivity(intent)
+            activity?.overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left)
+        }
+
+        binding.btnNotification.setOnClickListener {
+            val intent = Intent(requireContext(), NotificationActivity::class.java)
             startActivity(intent)
             activity?.overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left)
         }

@@ -12,6 +12,7 @@ import android.view.View
 import android.widget.Button
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.kotlin_customer_nom_movie_ticket.R
 import com.example.kotlin_customer_nom_movie_ticket.data.model.Day
@@ -57,9 +58,8 @@ class CinemaDetailFromBookNowActivity : AppCompatActivity(), OnMapReadyCallback 
         binding = ActivityCinemaDetailFromBookNowBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // Khởi tạo UI ban đầu: hiển thị progressBar, ẩn nestedScrollView
         binding.progressBar.visibility = View.VISIBLE
-        binding.progressBar.playAnimation() // Bắt đầu animation
+        binding.progressBar.playAnimation()
         binding.nestedScrollView.visibility = View.GONE
 
         val isDarkMode = (resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES
@@ -94,13 +94,12 @@ class CinemaDetailFromBookNowActivity : AppCompatActivity(), OnMapReadyCallback 
         binding.tvPhoneNumber.text = phoneNumber
         binding.tvAddress.text = cinemaAddress
 
-        // Khởi tạo danh sách ngày
         val days = generateDays(LocalDate.now(), 7)
         dayAdapter = DayAdapter(days, isDarkMode)
         setupRecycleView()
         binding.rcvDay.adapter = dayAdapter
         selectedDate = days.first().fullDate
-        isDaysLoaded = true // Danh sách ngày được tạo ngay lập tức
+        isDaysLoaded = true
         checkAllDataLoaded()
 
         showtimeAdapter = ShowtimeAdapter(emptyList()) { showtime ->
@@ -129,10 +128,8 @@ class CinemaDetailFromBookNowActivity : AppCompatActivity(), OnMapReadyCallback 
             toggleFavorite(cinemaId)
         }
 
-        // Kiểm tra trạng thái yêu thích
         checkFavoriteStatus(cinemaId)
 
-        // Khởi tạo bản đồ
         val mapFragment = supportFragmentManager.findFragmentById(binding.mapView.id) as SupportMapFragment?
             ?: SupportMapFragment.newInstance()
         supportFragmentManager.beginTransaction()
@@ -143,7 +140,7 @@ class CinemaDetailFromBookNowActivity : AppCompatActivity(), OnMapReadyCallback 
 
     override fun onMapReady(map: GoogleMap) {
         googleMap = map
-        isMapLoaded = true // Bản đồ đã load
+        isMapLoaded = true
         checkAllDataLoaded()
 
         val cinemaLatitude = intent.getDoubleExtra("latitude", 0.0)
@@ -184,11 +181,18 @@ class CinemaDetailFromBookNowActivity : AppCompatActivity(), OnMapReadyCallback 
 
     fun generateDays(startDate: LocalDate, numberOfDays: Int): List<Day> {
         val days = mutableListOf<Day>()
+        val vietnameseLocale = Locale("vi", "VN")
+        val today = LocalDate.now()
         for (i in 0 until numberOfDays) {
             val date = startDate.plusDays(i.toLong())
+            val dayName = if (date.isEqual(today)) {
+                "Hôm nay"
+            } else {
+                date.dayOfWeek.getDisplayName(TextStyle.FULL, vietnameseLocale)
+            }
             val day = Day(
                 dayNumber = String.format("%02d", date.dayOfMonth),
-                dayName = date.dayOfWeek.getDisplayName(TextStyle.SHORT, Locale.ENGLISH),
+                dayName = dayName,
                 fullDate = date,
                 isSelected = i == 0
             )
@@ -201,10 +205,16 @@ class CinemaDetailFromBookNowActivity : AppCompatActivity(), OnMapReadyCallback 
         binding.rcvDay.setHasFixedSize(true)
         binding.rcvDay.layoutManager =
             LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
-
-        binding.recyclerViewTimes.setHasFixedSize(true)
-        binding.recyclerViewTimes.layoutManager =
-            LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
+        val spaceInPixels = resources.getDimensionPixelSize(R.dimen.item_seat_spacing_3)
+        binding.recyclerViewTimes.apply {
+            setHasFixedSize(true)
+            layoutManager = GridLayoutManager(this@CinemaDetailFromBookNowActivity, 4)
+            binding.recyclerViewTimes.addItemDecoration(
+                ChooseSeatActivity.GridSpacingItemDecoration(
+                    spaceInPixels
+                )
+            )
+        }
     }
 
     private fun filterShowtimeByMovieIdAndDateAndCinema(movieId: String, cinemaId: String, date: LocalDate) {
@@ -216,7 +226,7 @@ class CinemaDetailFromBookNowActivity : AppCompatActivity(), OnMapReadyCallback 
             }
 
             showtimeAdapter.updateData(filteredShowtimes)
-            isShowtimesLoaded = true // Suất chiếu đã load
+            isShowtimesLoaded = true
             binding.recyclerViewTimes.visibility = if (filteredShowtimes.isNotEmpty()) View.VISIBLE else View.GONE
             binding.layoutNotFoundMovie.visibility = if (filteredShowtimes.isEmpty()) View.VISIBLE else View.GONE
             binding.tvPriceTitle.visibility = if (filteredShowtimes.isNotEmpty()) View.VISIBLE else View.GONE

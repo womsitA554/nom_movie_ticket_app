@@ -113,7 +113,7 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
                 .setContentTitle(title)
                 .setContentText(message)
                 .setColor(getColor(R.color.orange))
-                .setSmallIcon(R.drawable.logo_notification)
+                .setSmallIcon(R.drawable.bell_icon)
                 .setAutoCancel(true)
                 .setContentIntent(pendingIntent)
                 .build()

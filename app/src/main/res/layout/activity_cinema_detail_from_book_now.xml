@@ -191,7 +191,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Sorry, have not found any movie showtime."
+                    android:text="Rất tiếc, không tìm thấy xuất chiếu phim nào."
                     android:textStyle="normal"
                     android:layout_marginTop="10dp"
                     style="@style/TextColor"

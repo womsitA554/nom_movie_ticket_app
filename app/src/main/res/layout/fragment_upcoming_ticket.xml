@@ -82,7 +82,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
             android:fontFamily="@font/urbanist_bold"
-            android:text="Sorry, have not found any ticket."
+            android:text="Rất tiếc, không tìm thấy vé nào."
             style="@style/TextColor"
             android:textSize="16sp"
             android:textStyle="normal" />

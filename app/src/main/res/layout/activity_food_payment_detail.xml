@@ -108,7 +108,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="16dp"
                     android:fontFamily="@font/urbanist_bold"
-                    android:text="Your Cart is Empty"
+                    android:text="Giỏ hàng của bạn đang trống."
                     style="@style/TextColor"
                     android:textSize="18sp"
                     android:textStyle="bold" />
@@ -118,7 +118,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
                     android:fontFamily="@font/urbanist_regular"
-                    android:text="Add some delicious food to your cart!"
+                    android:text="Thêm một số món ăn ngon vào giỏ hàng của bạn!"
                     android:textColor="@color/dark_grey"
                     android:textSize="16sp" />
 
@@ -130,7 +130,7 @@
                     android:backgroundTint="#FF5722"
                     android:paddingHorizontal="24dp"
                     android:paddingVertical="8dp"
-                    android:text="Back to Food Page"
+                    android:text="Quay lại trang đồ ăn"
                     android:textAllCaps="false"
                     android:textColor="@android:color/white"
                     android:textSize="16sp" />

@@ -160,7 +160,7 @@
                 android:layout_gravity="center"
                 android:backgroundTint="#FFE8E0"
                 android:paddingVertical="8dp"
-                android:text="Đonng"
+                android:text="Đóng"
                 android:textAllCaps="false"
                 android:textColor="@color/orange"
                 android:textSize="11sp"

@@ -433,35 +433,16 @@ class NowPlayingDetailActivity : AppCompatActivity() {
                     .putString("message", "Cảm ơn bạn đã đánh giá $movieTitle! Bạn đã nhận được 100 điểm thưởng.")
                     .putString("token", token)
                     .putString("movie_id", movieId)
+                    .putBoolean("isShowtime", false)
+                    .putBoolean("isReview", true)
                     .build()
                 val workRequest = OneTimeWorkRequestBuilder<NotificationWorker>()
-                    .setInitialDelay(0, TimeUnit.MILLISECONDS) // Immediate notification
+                    .setInitialDelay(0, TimeUnit.MILLISECONDS)
                     .setInputData(data)
                     .addTag("rating_$movieId")
                     .build()
                 WorkManager.getInstance(this).enqueue(workRequest)
                 Log.d("FCM_Token", "Current device token: $token")
-
-                val database = FirebaseDatabase.getInstance().reference
-                val notificationId = database.child("Notifications").child(userId).push().key
-                if (notificationId != null) {
-                    val notificationData = mapOf(
-                        "notification_id" to notificationId,
-                        "title" to title,
-                        "message" to "Cảm ơn bạn đã đánh giá $movieTitle! Bạn đã nhận được 100 điểm thưởng.",
-                        "timestamp" to System.currentTimeMillis(),
-                        "type" to "isReview",
-                        "movie_id" to movieId
-                    )
-                    database.child("Notifications").child(userId).child(notificationId)
-                        .setValue(notificationData)
-                        .addOnSuccessListener {
-                            Log.d("NowPlayingDetailActivity", "Notification stored in Firebase: $notificationId")
-                        }
-                        .addOnFailureListener { e ->
-                            Log.e("NowPlayingDetailActivity", "Failed to store notification: ${e.message}")
-                        }
-                }
             } else {
                 Log.e("FCM_Token", "Failed to get token: ${task.exception?.message}")
                 Toast.makeText(this, "Không thể gửi thông báo", Toast.LENGTH_SHORT).show()

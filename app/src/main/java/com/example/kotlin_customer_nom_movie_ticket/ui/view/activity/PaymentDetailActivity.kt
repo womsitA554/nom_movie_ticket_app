@@ -65,6 +65,7 @@ import java.text.NumberFormat
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
+import java.util.TimeZone
 import kotlin.math.min
 
 class PaymentDetailActivity : AppCompatActivity() {
@@ -281,16 +282,16 @@ class PaymentDetailActivity : AppCompatActivity() {
                     if (clientSecretKey != null) {
                         paymentFlow()
                     } else {
-                        Toast.makeText(this, "Payment not ready, please wait", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(this, "Thanh toán chưa sẵn sàng, vui lòng đợi", Toast.LENGTH_SHORT).show()
                     }
                 } else {
-                    Toast.makeText(this, "Please choose pick-up time", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, "Vui lòng chọn thời gian nhận đồ", Toast.LENGTH_SHORT).show()
                 }
             } else {
                 if (clientSecretKey != null) {
                     paymentFlow()
                 } else {
-                    Toast.makeText(this, "Payment not ready, please wait", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, "Thanh toán chưa sẵn sàng, vui lòng đợi", Toast.LENGTH_SHORT).show()
                 }
             }
         }
@@ -329,8 +330,7 @@ class PaymentDetailActivity : AppCompatActivity() {
             roomName = room?.room_name ?: "Unknown Room"
         }.addOnFailureListener { exception ->
             Log.e("PaymentDetailActivity", "Error fetching roomName", exception)
-            roomName = "Unknown Room" // Fallback
-            Toast.makeText(this, "Failed to fetch room name", Toast.LENGTH_SHORT).show()
+            roomName = "Unknown Room"
         }
     }
 
@@ -370,7 +370,7 @@ class PaymentDetailActivity : AppCompatActivity() {
         btnApply?.setOnClickListener {
             val inputPoints = etPoints?.text.toString().toIntOrNull() ?: 0
             if (inputPoints <= 0) {
-                Toast.makeText(this, "Please enter a valid number of points", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "Vui lòng nhập số điểm hợp lệ", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
 
@@ -387,14 +387,14 @@ class PaymentDetailActivity : AppCompatActivity() {
                 if (inputPoints > maxUsablePoints) {
                     Toast.makeText(
                         this@PaymentDetailActivity,
-                        "Cannot use more than $maxUsablePoints points for this order",
+                        "Không thể sử dụng nhiều hơn $maxUsablePoints điểm cho đơn hàng này",
                         Toast.LENGTH_SHORT
                     ).show()
                     return@launch
                 }
 
                 if (inputPoints > availablePoints) {
-                    Toast.makeText(this@PaymentDetailActivity, "Not enough points", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this@PaymentDetailActivity, "Không đủ điểm", Toast.LENGTH_SHORT).show()
                     return@launch
                 }
 
@@ -437,7 +437,7 @@ class PaymentDetailActivity : AppCompatActivity() {
 
         if (actualPay < 0) {
             Log.e("PaymentDetailActivity", "Invalid actualPay: $actualPay")
-            Toast.makeText(this, "Invalid payment amount. Please check your order.", Toast.LENGTH_LONG).show()
+            Toast.makeText(this, "Số tiền thanh toán không hợp lệ. Vui lòng kiểm tra đơn hàng của bạn.", Toast.LENGTH_LONG).show()
             binding.btnContinue.isEnabled = false
             return
         }
@@ -546,7 +546,7 @@ class PaymentDetailActivity : AppCompatActivity() {
             intent.putExtra("showtime_time", showtimeTime)
             intent.putExtra("age_rating", movieAgeRating)
             intent.putExtra("seat_name", seatName)
-            intent.putExtra("room_name", roomName) // Added roomName
+            intent.putExtra("room_name", roomName)
             startActivity(intent)
             setResult(RESULT_OK)
             countDownTimer.cancel()
@@ -591,7 +591,7 @@ class PaymentDetailActivity : AppCompatActivity() {
                 primaryButton = PaymentSheet.PrimaryButton(
                     colorsLight = PaymentSheet.PrimaryButtonColors(
                         background = Color.parseColor("#FE3323"),
-                        onBackground = Color.WHITE, // Màu văn bản trên nút
+                        onBackground = Color.WHITE,
                         border = Color.parseColor("#FE3323")
                     ),
                     colorsDark = PaymentSheet.PrimaryButtonColors(
@@ -622,7 +622,7 @@ class PaymentDetailActivity : AppCompatActivity() {
             paymentSheet.presentWithPaymentIntent(secret, configuration)
         } ?: run {
             Log.e("PaymentFlow", "Client secret key is null")
-            Toast.makeText(this, "Payment configuration error", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "Lỗi cấu hình thanh toán", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -726,7 +726,7 @@ class PaymentDetailActivity : AppCompatActivity() {
                 Log.e("PaymentSheetResult", "Payment failed: ${paymentSheetResult.error.message}")
                 Toast.makeText(
                     this,
-                    "Payment failed: ${paymentSheetResult.error.message}",
+                    "Thanh toán không thành công: ${paymentSheetResult.error.message}",
                     Toast.LENGTH_SHORT
                 ).show()
             }
@@ -835,7 +835,8 @@ class PaymentDetailActivity : AppCompatActivity() {
         dialog.setContentView(R.layout.bottom_sheet_choose_time_pick_up)
         dialog.show()
 
-        val bottomSheet = dialog.findViewById<View>(com.google.android.material.R.id.design_bottom_sheet)
+        val bottomSheet =
+            dialog.findViewById<View>(com.google.android.material.R.id.design_bottom_sheet)
         bottomSheet?.let {
             val behavior = BottomSheetBehavior.from(it)
             behavior.state = BottomSheetBehavior.STATE_EXPANDED
@@ -848,7 +849,7 @@ class PaymentDetailActivity : AppCompatActivity() {
                 }
 
                 override fun onSlide(customSheet: View, slideOffset: Float) {
-                    if (slideOffset < 0.03) dialog.dismiss()
+                    if (slideOffset < 0.01) dialog.dismiss()
                     Log.d("BottomSheet", "Slide offset: $slideOffset")
                 }
             })
@@ -858,13 +859,28 @@ class PaymentDetailActivity : AppCompatActivity() {
         val btnPickUpLater = dialog.findViewById<LinearLayout>(R.id.btnPickUpLater)
 
         btnPickUpNow?.setOnClickListener {
+            Log.d("PickUpNow", "Picked up now")
             dialog.dismiss()
-            val currentTime = SimpleDateFormat("HH:mm", Locale.getDefault()).format(Calendar.getInstance().time)
-            val dateString = "Today, ${SimpleDateFormat("MMM dd, yyyy", Locale.getDefault()).format(calendar.time)}"
+
+            val calendar  = Calendar.getInstance(TimeZone.getTimeZone("Asia/Ho_Chi_Minh"))
+            calendar.add(Calendar.MINUTE, 10)
+            val currentTime =
+                SimpleDateFormat("HH:mm", Locale("vi", "VN")).format(calendar.time)
+            val dateString = "Hôm nay, ${
+                SimpleDateFormat(
+                    "dd MMM, yyyy",
+                    Locale("vi", "VN")
+                ).format(calendar.time)
+            }"
             val dayOfWeekFormat = SimpleDateFormat("EEEE", Locale.getDefault())
 
-            val dayOfWeek = "${dayOfWeekFormat.format(calendar.time)}, ${SimpleDateFormat("MMM dd, yyyy", Locale.getDefault()).format(calendar.time)}"
-            binding.tvTimePickUp.text = "Pick up at $currentTime"
+            val dayOfWeek = "${dayOfWeekFormat.format(calendar.time)}, ${
+                SimpleDateFormat(
+                    "dd MMM, yyyy",
+                    Locale("vi", "VN")
+                ).format(calendar.time)
+            }"
+            binding.tvTimePickUp.text = "Nhận đồ lúc $currentTime"
             binding.tvTimeValue.text = dateString
             pickUpTime = "$dayOfWeek $currentTime"
         }
@@ -893,7 +909,6 @@ class PaymentDetailActivity : AppCompatActivity() {
                 }
 
                 override fun onSlide(customSheet: View, slideOffset: Float) {
-                    if (slideOffset < 0.03) dialog.dismiss()
                     Log.d("BottomSheet", "Slide offset: $slideOffset")
                 }
             })
@@ -904,15 +919,29 @@ class PaymentDetailActivity : AppCompatActivity() {
         val minutePicker = dialog.findViewById<NumberPicker>(R.id.minutePicker)
         val btnSetTime = dialog.findViewById<Button>(R.id.btnSetTime)
 
+        val currentCalendar = Calendar.getInstance(TimeZone.getTimeZone("Asia/Ho_Chi_Minh"))
+        currentCalendar.add(Calendar.MINUTE, 10)
+        val minHour = currentCalendar.get(Calendar.HOUR_OF_DAY)
+        val minMinute = currentCalendar.get(Calendar.MINUTE)
+
         hourPicker?.minValue = 0
         hourPicker?.maxValue = 23
-        hourPicker?.value = 14
-        lastHour = hourPicker?.value ?: 14
+        if (isToday(calendar)) {
+            hourPicker?.minValue = minHour
+        }
+        hourPicker?.value = if (isToday(calendar) && lastHour < minHour) minHour else lastHour
         hourPicker?.setFormatter { value -> String.format("%02d", value) }
 
         minutePicker?.minValue = 0
         minutePicker?.maxValue = 59
-        minutePicker?.value = 30
+        if (isToday(calendar) && hourPicker?.value == minHour) {
+            minutePicker?.minValue = minMinute
+        }
+        minutePicker?.value = if (isToday(calendar) && hourPicker?.value == minHour && minutePicker?.value ?: 0 < minMinute) {
+            minMinute
+        } else {
+            minutePicker?.value ?: 30
+        }
         minutePicker?.setFormatter { value -> String.format("%02d", value) }
 
         hourPicker?.let { removeSelectionDivider(it) }
@@ -925,14 +954,35 @@ class PaymentDetailActivity : AppCompatActivity() {
         hourPicker?.setOnValueChangedListener { _, oldHour, newHour ->
             if (oldHour == 23 && newHour == 0) {
                 calendar.add(Calendar.DAY_OF_MONTH, 1)
+                hourPicker.minValue = 0
+                minutePicker?.minValue = 0
             } else if (oldHour == 0 && newHour == 23) {
                 val newDate = calendar.clone() as Calendar
                 newDate.add(Calendar.DAY_OF_MONTH, -1)
                 if (isBeforeToday(newDate)) {
-                    calendar.set(todayCalendar.get(Calendar.YEAR), todayCalendar.get(Calendar.MONTH), todayCalendar.get(Calendar.DAY_OF_MONTH))
+                    calendar.set(
+                        todayCalendar.get(Calendar.YEAR),
+                        todayCalendar.get(Calendar.MONTH),
+                        todayCalendar.get(Calendar.DAY_OF_MONTH)
+                    )
+                    hourPicker.minValue = minHour
+                    if (newHour == minHour) {
+                        minutePicker?.minValue = minMinute
+                        if (minutePicker?.value ?: 0 < minMinute) {
+                            minutePicker?.value = minMinute
+                        }
+                    }
                 } else {
                     calendar.add(Calendar.DAY_OF_MONTH, -1)
                 }
+            }
+            if (isToday(calendar) && newHour == minHour) {
+                minutePicker?.minValue = minMinute
+                if (minutePicker?.value ?: 0 < minMinute) {
+                    minutePicker?.value = minMinute
+                }
+            } else {
+                minutePicker?.minValue = 0
             }
             lastHour = newHour
             if (dateText != null && minutePicker != null) {
@@ -942,23 +992,35 @@ class PaymentDetailActivity : AppCompatActivity() {
 
         minutePicker?.setOnValueChangedListener { _, _, newMinute ->
             if (dateText != null && hourPicker != null) {
-                updateDateText(dateText, hourPicker.value, newMinute)
+                if (isToday(calendar) && hourPicker.value == minHour && newMinute < minMinute) {
+                    minutePicker.value = minMinute
+                }
+                updateDateText(dateText, hourPicker.value, minutePicker.value)
             }
         }
 
         btnSetTime?.setOnClickListener {
-            val selectedDate = SimpleDateFormat("MMM dd, yyyy", Locale.getDefault()).format(calendar.time)
-            val selectedTime = String.format("%02d:%02d", hourPicker?.value, minutePicker?.value)
+            val selectedCalendar = calendar.clone() as Calendar
+            selectedCalendar.set(Calendar.HOUR_OF_DAY, hourPicker?.value ?: 0)
+            selectedCalendar.set(Calendar.MINUTE, minutePicker?.value ?: 0)
+            if (isToday(calendar) && selectedCalendar.before(currentCalendar)) {
+                Toast.makeText(
+                    this,
+                    "Thời gian không hợp lệ, phải sau ${String.format("%02d:%02d", minHour, minMinute)} hôm nay",
+                    Toast.LENGTH_SHORT
+                ).show()
+                return@setOnClickListener
+            }
             updateDateText(binding.tvTimeValue, hourPicker?.value ?: 0, minutePicker?.value ?: 0)
             dialog.dismiss()
         }
     }
 
     private fun updateDateText(dateText: TextView, hour: Int, minute: Int) {
-        val dateFormat = SimpleDateFormat("MMM dd, yyyy", Locale.getDefault())
-        val dayOfWeekFormat = SimpleDateFormat("EEEE", Locale.getDefault())
+        val dateFormat = SimpleDateFormat("dd MMM, yyyy", Locale("vi", "VN")).format(calendar.time)
+        val dayOfWeekFormat = SimpleDateFormat("EEEE", Locale("vi", "VN"))
         val dateString = if (isToday(calendar)) {
-            "Today, ${dateFormat.format(calendar.time)}"
+            "Hôm nay, ${SimpleDateFormat("dd MMM, yyyy", Locale("vi", "VN")).format(calendar.time)}"
         } else {
             "${dayOfWeekFormat.format(calendar.time)}, ${dateFormat.format(calendar.time)}"
         }
@@ -966,8 +1028,9 @@ class PaymentDetailActivity : AppCompatActivity() {
         val time = String.format("%02d:%02d", hour, minute)
         dateText.text = "$dateString"
 
-        val dayOfWeek = "${dayOfWeekFormat.format(calendar.time)}, ${dateFormat.format(calendar.time)}"
-        binding.tvTimePickUp.text = "Pick up at $time"
+        val dayOfWeek =
+            "${dayOfWeekFormat.format(calendar.time)}, ${dateFormat.format(calendar.time)}"
+        binding.tvTimePickUp.text = "Nhận đồ lúc $time"
         binding.tvTimeValue.text = "$dateString"
         pickUpTime = "$dayOfWeek $time"
     }

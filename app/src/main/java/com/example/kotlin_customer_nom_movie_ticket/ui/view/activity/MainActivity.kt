@@ -2,11 +2,8 @@ package com.example.kotlin_customer_nom_movie_ticket.ui.view.activity
 
 import android.Manifest
 import android.app.Dialog
-import android.app.NotificationManager
 import android.content.Context
 import android.content.Intent
-import android.content.IntentFilter
-import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
@@ -15,18 +12,17 @@ import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
 import android.util.Log
-import android.view.LayoutInflater
 import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.content.ContextCompat
 import androidx.core.text.HtmlCompat
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import com.example.kotlin_customer_nom_movie_ticket.R
 import com.example.kotlin_customer_nom_movie_ticket.databinding.ActivityMainBinding
 import com.example.kotlin_customer_nom_movie_ticket.helper.ThemePreferences
@@ -35,15 +31,16 @@ import com.example.kotlin_customer_nom_movie_ticket.ui.view.fragment.FoodAndDrin
 import com.example.kotlin_customer_nom_movie_ticket.ui.view.fragment.HomeFragment
 import com.example.kotlin_customer_nom_movie_ticket.ui.view.fragment.MyTicketFragment
 import com.example.kotlin_customer_nom_movie_ticket.ui.view.fragment.ProfileFragment
+import com.example.kotlin_customer_nom_movie_ticket.util.NetworkUtils
 import com.example.kotlin_customer_nom_movie_ticket.util.SessionManager
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.messaging.FirebaseMessaging
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 import nl.joery.animatedbottombar.AnimatedBottomBar
 
 class MainActivity : AppCompatActivity() {
     lateinit var binding: ActivityMainBinding
-    private lateinit var sharedPreferences: SharedPreferences
-
     private var homeFragment = HomeFragment()
     private var cinemaFragment = CinemaFragment()
     private var foodAndDrinkFragment = FoodAndDrinkFragment()
@@ -51,8 +48,7 @@ class MainActivity : AppCompatActivity() {
     private var profileFragment = ProfileFragment()
     private var activeFragment: Fragment? = null
     private var currentFragmentTag: String = TAG_HOME
-
-    private var notificationDialog: AlertDialog? = null
+    private var notificationDialog: Dialog? = null
 
     private val requestPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -67,7 +63,6 @@ class MainActivity : AppCompatActivity() {
             }
         }
         notificationDialog?.dismiss()
-        // Gọi callback nếu có
         permissionCallback?.invoke(isGranted)
     }
 
@@ -91,9 +86,6 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // Khởi tạo SharedPreferences
-        sharedPreferences = getSharedPreferences("loginSaved", Context.MODE_PRIVATE)
-
         // Khởi tạo Fragment và giao diện
         currentFragmentTag = savedInstanceState?.getString("CURRENT_FRAGMENT_TAG") ?: TAG_HOME
         val currentFragment = supportFragmentManager.findFragmentByTag(currentFragmentTag)
@@ -102,10 +94,26 @@ class MainActivity : AppCompatActivity() {
         }
         setupFragments(savedInstanceState)
         setupBottomBar()
-        getFCMToken()
+
+        // Kiểm tra mạng và lấy FCM token
+        if (NetworkUtils.isNetworkAvailable(this)) {
+            getFCMToken()
+        } else {
+            Toast.makeText(this, "Không có kết nối mạng. Vui lòng kiểm tra kết nối.", Toast.LENGTH_LONG).show()
+        }
+
+        // Theo dõi trạng thái mạng
+        lifecycleScope.launch {
+            NetworkUtils.networkStatusFlow(this@MainActivity).collectLatest { isConnected ->
+                if (isConnected) {
+                    getFCMToken()
+                } else {
+                    Toast.makeText(this@MainActivity, "Mất kết nối mạng.", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
 
         checkNotificationStatus()
-
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -143,8 +151,6 @@ class MainActivity : AppCompatActivity() {
             }
         }
     }
-
-
 
     private fun initializeFragments() {
         val transaction = supportFragmentManager.beginTransaction()
@@ -184,8 +190,7 @@ class MainActivity : AppCompatActivity() {
         transaction.commit()
     }
 
-
-    private fun showFragment(fragment: androidx.fragment.app.Fragment) {
+    private fun showFragment(fragment: Fragment) {
         val transaction = supportFragmentManager.beginTransaction()
         Log.d("MainActivity", "Switching to fragment: ${fragment::class.java.simpleName}")
 
@@ -238,7 +243,6 @@ class MainActivity : AppCompatActivity() {
         })
     }
 
-
     private fun getFCMToken() {
         FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
             if (task.isSuccessful) {
@@ -247,6 +251,7 @@ class MainActivity : AppCompatActivity() {
                 Log.d("MainActivity", "FCM token: $token")
             } else {
                 Log.e("MainActivity", "Fetching FCM token failed", task.exception)
+                Toast.makeText(this, "Không thể lấy FCM token.", Toast.LENGTH_SHORT).show()
             }
         }
     }
@@ -264,6 +269,7 @@ class MainActivity : AppCompatActivity() {
                 }
                 .addOnFailureListener { exception ->
                     Log.e("MainActivity", "Failed to update FCM token: ${exception.message}")
+                    Toast.makeText(this, "Không thể cập nhật FCM token.", Toast.LENGTH_SHORT).show()
                 }
         } else {
             Log.w("MainActivity", "User ID is null or empty, cannot update FCM token")
@@ -282,7 +288,7 @@ class MainActivity : AppCompatActivity() {
                     showNotificationPermissionDialog()
                 }
             } else {
-                val notificationManager = getSystemService(NotificationManager::class.java)
+                val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as android.app.NotificationManager
                 if (!notificationManager.areNotificationsEnabled()) {
                     showNotificationPermissionDialog()
                 }
@@ -291,25 +297,27 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun showNotificationPermissionDialog() {
-        val dialog = Dialog(this)
-        dialog.setContentView(R.layout.dialog_notification_permisstion)
-        dialog.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
-        dialog.setCancelable(false)
-        dialog.show()
-
-        val imageView = dialog.findViewById<ImageView>(R.id.imageView)
-        val textView = dialog.findViewById<TextView>(R.id.textView9)
-        val btnAllow = dialog.findViewById<Button>(R.id.btnAllow)
-        val btnNotAllow = dialog.findViewById<Button>(R.id.btnNotAllow)
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            textView.text = getString(R.string.notification_permission_text)
-        } else {
-            textView.text = HtmlCompat.fromHtml(getString(R.string.notification_permission_text), HtmlCompat.FROM_HTML_MODE_LEGACY)
+        notificationDialog = Dialog(this).apply {
+            setContentView(R.layout.dialog_notification_permisstion)
+            window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+            setCancelable(false)
         }
 
+        val imageView = notificationDialog?.findViewById<ImageView>(R.id.imageView)
+        val textView = notificationDialog?.findViewById<TextView>(R.id.textView9)
+        val btnAllow = notificationDialog?.findViewById<Button>(R.id.btnAllow)
+        val btnNotAllow = notificationDialog?.findViewById<Button>(R.id.btnNotAllow)
 
-        btnAllow.setOnClickListener {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            textView?.text = getString(R.string.notification_permission_text)
+        } else {
+            textView?.text = HtmlCompat.fromHtml(
+                getString(R.string.notification_permission_text),
+                HtmlCompat.FROM_HTML_MODE_LEGACY
+            )
+        }
+
+        btnAllow?.setOnClickListener {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                 requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
             } else {
@@ -317,13 +325,13 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        btnNotAllow.setOnClickListener {
+        btnNotAllow?.setOnClickListener {
             val prefs = getSharedPreferences("app_prefs", MODE_PRIVATE)
             prefs.edit().putBoolean("notification_dialog_dismissed", true).apply()
-            dialog.dismiss()
+            notificationDialog?.dismiss()
         }
 
-        dialog.show()
+        notificationDialog?.show()
     }
 
     private fun openNotificationSettings() {
@@ -373,6 +381,9 @@ class MainActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         checkNotificationStatus()
+        if (NetworkUtils.isNetworkAvailable(this)) {
+            getFCMToken()
+        }
     }
 
     override fun onDestroy() {

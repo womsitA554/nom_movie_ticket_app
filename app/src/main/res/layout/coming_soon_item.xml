@@ -41,7 +41,7 @@
         android:gravity="center"
         android:paddingHorizontal="20dp"
         android:paddingVertical="10dp"
-        android:text="Danh sách theo dõi"
+        android:text="Theo dõi"
         android:maxLines="2"
         style="@style/TextColor"
         android:textSize="11sp"

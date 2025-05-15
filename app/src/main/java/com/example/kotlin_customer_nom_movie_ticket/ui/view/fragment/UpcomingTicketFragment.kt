@@ -39,18 +39,7 @@ import com.example.kotlin_customer_nom_movie_ticket.ui.view.activity.MainActivit
 import com.example.kotlin_customer_nom_movie_ticket.ui.view.activity.OrderFoodDetailActivity
 import com.example.kotlin_customer_nom_movie_ticket.util.SessionManager
 import com.example.kotlin_customer_nom_movie_ticket.viewmodel.TicketViewModel
-import com.google.auth.oauth2.GoogleCredentials
-import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.messaging.FirebaseMessaging
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import okhttp3.MediaType.Companion.toMediaTypeOrNull
-import okhttp3.OkHttpClient
-import okhttp3.Request
-import okhttp3.RequestBody.Companion.toRequestBody
-import org.json.JSONObject
-import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
@@ -66,7 +55,6 @@ class UpcomingTicketFragment : Fragment() {
     private var isMovieTabSelected = true
     private lateinit var customerId: String
     private var isFetching = true
-
     private var isFetchingBookings = false
     private var isFetchingFoodBookings = false
 
@@ -90,15 +78,13 @@ class UpcomingTicketFragment : Fragment() {
 
         val isDarkMode = (resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES
 
-        // Initialize UI with progressBar visible
         binding.rcvUpcomingTicket.visibility = View.GONE
         binding.rcvUpcomingFood.visibility = View.GONE
         binding.progressBar.visibility = View.VISIBLE
-        binding.progressBar.playAnimation() // Bắt đầu animation
+        binding.progressBar.playAnimation()
         binding.layoutNotFoundTicket.visibility = View.GONE
         isMovieTabSelected = true
         isFetching = true
-        Log.d("UpcomingTicketFragment", "onViewCreated: isMovieTabSelected=$isMovieTabSelected, isFetching=$isFetching")
 
         customerId = SessionManager.getUserId(requireContext()) ?: run {
             requireActivity().finish()
@@ -114,7 +100,6 @@ class UpcomingTicketFragment : Fragment() {
         fetchInitialData()
         setupObservers()
 
-        // Request notification permission
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
                 ActivityCompat.requestPermissions(requireActivity(), arrayOf(Manifest.permission.POST_NOTIFICATIONS), 1)
@@ -158,11 +143,9 @@ class UpcomingTicketFragment : Fragment() {
     }
 
     private fun setupObservers() {
-        Log.d("UpcomingTicketFragment", "Setting up observers")
         ticketViewModel.upcomingBookings.observe(viewLifecycleOwner) { bookings ->
             adapter.updateData(bookings.toMutableList())
             isFetchingBookings = false
-            Log.d("UpcomingTicketFragment", "Updated upcoming bookings: ${bookings.size}")
             if (!isFetchingBookings && !isFetchingFoodBookings) {
                 isFetching = false
                 updateUI()
@@ -172,7 +155,6 @@ class UpcomingTicketFragment : Fragment() {
         ticketViewModel.upComingFoodBookings.observe(viewLifecycleOwner) { foodBookings ->
             foodAdapter.updateData(foodBookings)
             isFetchingFoodBookings = false
-            Log.d("UpcomingTicketFragment", "Updated food bookings: ${foodBookings.size}")
             if (!isFetchingBookings && !isFetchingFoodBookings) {
                 isFetching = false
                 updateUI()
@@ -185,21 +167,17 @@ class UpcomingTicketFragment : Fragment() {
                 isFetchingFoodBookings = false
                 isFetching = false
                 Toast.makeText(requireContext(), it, Toast.LENGTH_SHORT).show()
-                Log.e("UpcomingTicketFragment", "Error: $it")
-                stopAnimation() // Dừng và ẩn progressBar khi có lỗi
+                stopAnimation()
                 binding.layoutNotFoundTicket.visibility = View.VISIBLE
             }
         }
 
-        ticketViewModel.isLoading.observe(viewLifecycleOwner) { isLoading ->
-            Log.d("UpcomingTicketFragment", "isLoading changed: $isLoading")
-            updateUI()
-        }
+        ticketViewModel.isLoading.observe(viewLifecycleOwner) { updateUI() }
     }
 
     private fun stopAnimation() {
-        binding.progressBar.cancelAnimation() // Dừng animation
-        binding.progressBar.visibility = View.GONE // Ẩn progressBar
+        binding.progressBar.cancelAnimation()
+        binding.progressBar.visibility = View.GONE
     }
 
     private fun setupTabButtons(isDarkMode: Boolean) {
@@ -218,11 +196,7 @@ class UpcomingTicketFragment : Fragment() {
             if (!isDarkMode) {
                 binding.btnMovie.setTextColor(ContextCompat.getColor(requireContext(), R.color.white))
                 binding.btnFood.setTextColor(ContextCompat.getColor(requireContext(), R.color.black))
-            } else {
-                binding.btnMovie.setTextColor(ContextCompat.getColor(requireContext(), R.color.white))
-                binding.btnFood.setTextColor(ContextCompat.getColor(requireContext(), R.color.white))
             }
-            Log.d("UpcomingTicketFragment", "Movie tab selected: isMovieTabSelected=$isMovieTabSelected")
             updateUI()
         }
 
@@ -233,11 +207,7 @@ class UpcomingTicketFragment : Fragment() {
             if (!isDarkMode) {
                 binding.btnMovie.setTextColor(ContextCompat.getColor(requireContext(), R.color.black))
                 binding.btnFood.setTextColor(ContextCompat.getColor(requireContext(), R.color.white))
-            } else {
-                binding.btnMovie.setTextColor(ContextCompat.getColor(requireContext(), R.color.white))
-                binding.btnFood.setTextColor(ContextCompat.getColor(requireContext(), R.color.white))
             }
-            Log.d("UpcomingTicketFragment", "Food tab selected: isMovieTabSelected=$isMovieTabSelected")
             updateUI()
         }
     }
@@ -249,22 +219,18 @@ class UpcomingTicketFragment : Fragment() {
         binding.rcvUpcomingFood.visibility = View.GONE
         binding.progressBar.visibility = View.VISIBLE
         binding.progressBar.playAnimation()
-        Log.d("UpcomingTicketFragment", "fetchInitialData: isFetchingBookings=$isFetchingBookings, isFetchingFoodBookings=$isFetchingFoodBookings, customerId=$customerId")
         ticketViewModel.fetchBookings(customerId)
         ticketViewModel.fetchFoodBookings(customerId)
     }
 
     private fun updateUI() {
         val isLoading = ticketViewModel.isLoading.value
-        Log.d("UpcomingTicketFragment", "updateUI: isMovieTabSelected=$isMovieTabSelected, isLoading=$isLoading, isFetching=$isFetching")
-
         if (isFetching || isLoading == true) {
             binding.rcvUpcomingTicket.visibility = View.GONE
             binding.rcvUpcomingFood.visibility = View.GONE
             binding.progressBar.visibility = View.VISIBLE
             binding.progressBar.playAnimation()
             binding.layoutNotFoundTicket.visibility = View.GONE
-            Log.d("UpcomingTicketFragment", "Showing progressBar: isFetching=$isFetching, isLoading=$isLoading")
             return
         }
 
@@ -274,15 +240,12 @@ class UpcomingTicketFragment : Fragment() {
             binding.rcvUpcomingTicket.visibility = if (bookings.isNotEmpty()) View.VISIBLE else View.GONE
             binding.rcvUpcomingFood.visibility = View.GONE
             binding.layoutNotFoundTicket.visibility = if (bookings.isEmpty()) View.VISIBLE else View.GONE
-            Log.d("UpcomingTicketFragment", "Movie tab, bookings: ${bookings.size}, dataAvailable: ${bookings.isNotEmpty()}")
         } else {
             val foodBookings = ticketViewModel.upComingFoodBookings.value ?: emptyList()
             binding.rcvUpcomingTicket.visibility = View.GONE
             binding.rcvUpcomingFood.visibility = if (foodBookings.isNotEmpty()) View.VISIBLE else View.GONE
             binding.layoutNotFoundTicket.visibility = if (foodBookings.isEmpty()) View.VISIBLE else View.GONE
-            Log.d("UpcomingTicketFragment", "Food tab, foodBookings: ${foodBookings.size}, dataAvailable: ${foodBookings.isNotEmpty()}")
         }
-        Log.d("UpcomingTicketFragment", "UI updated: progressBar=${binding.progressBar.visibility}, notFound=${binding.layoutNotFoundTicket.visibility}")
     }
 
     private fun showOpenProfileDialog(booking: Booking, position: Int) {
@@ -328,7 +291,6 @@ class UpcomingTicketFragment : Fragment() {
 
     private fun scheduleNotification(booking: Booking) {
         val prefs = requireContext().getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
-        val userId = context?.let { SessionManager.getUserId(it).toString() }
         if (!prefs.getBoolean("notifications_enabled", true)) {
             Log.d("UpcomingTicketFragment", "Notifications disabled, skipping schedule")
             return
@@ -348,13 +310,21 @@ class UpcomingTicketFragment : Fragment() {
             return
         }
         val delay = notifyTime - currentTime
+
+        val title = "Sắp Đến Giờ Chiếu ${booking.title}!"
+        val message = "${booking.title} bắt đầu sau 30 phút tại ${booking.cinema_name ?: "rạp chiếu"}. Đừng đến muộn!"
+
         FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
             if (task.isSuccessful) {
                 val token = task.result
                 val data = Data.Builder()
-                    .putString("title", "Sắp Đến Giờ Chiếu ${booking.title}!")
-                    .putString("message", "${booking.title} bắt đầu sau 30 phút tại ${booking.cinema_name ?: "rạp chiếu"}. Đừng đến muộn!")
+                    .putString("title", title)
+                    .putString("message", message)
                     .putString("token", token)
+                    .putString("movie_id", booking.movie_id)
+                    .putString("bill_id", booking.bill_id)
+                    .putBoolean("isShowtime", true)
+                    .putBoolean("isReview", false)
                     .build()
                 val workRequest = OneTimeWorkRequestBuilder<NotificationWorker>()
                     .setInitialDelay(delay, TimeUnit.MILLISECONDS)
@@ -364,27 +334,6 @@ class UpcomingTicketFragment : Fragment() {
                 WorkManager.getInstance(requireContext()).enqueue(workRequest)
                 booking.isReminderEnabled = true
                 Log.d("FCM_Token", "Current device token: $token")
-
-                val database = FirebaseDatabase.getInstance().reference
-                val notificationId = userId?.let { database.child("Notifications").child(it).push().key }
-                if (notificationId != null) {
-                    val notificationData = mapOf(
-                        "notification_id" to notificationId,
-                        "title" to "NomMovie",
-                        "message" to "${booking.title} bắt đầu sau 30 phút tại ${booking.cinema_name ?: "rạp chiếu"}. Đừng đến muộn!",
-                        "timestamp" to System.currentTimeMillis(),
-                        "type" to "isReminder",
-                        "movie_id" to booking.movie_id
-                    )
-                    database.child("Notifications").child(userId).child(notificationId)
-                        .setValue(notificationData)
-                        .addOnSuccessListener {
-                            Log.d("NowPlayingDetailActivity", "Notification stored in Firebase: $notificationId")
-                        }
-                        .addOnFailureListener { e ->
-                            Log.e("NowPlayingDetailActivity", "Failed to store notification: ${e.message}")
-                        }
-                }
             } else {
                 booking.isReminderEnabled = false
                 Log.e("FCM_Token", "Failed to get token: ${task.exception?.message}")
@@ -397,83 +346,9 @@ class UpcomingTicketFragment : Fragment() {
         WorkManager.getInstance(requireContext()).cancelAllWorkByTag(booking.bill_id)
     }
 
-    fun sendNotificationWithFCMv1(context: Context, recipientToken: String, senderName: String, messageText: String) {
-        FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
-            if (!task.isSuccessful) {
-                Log.e("FCM", "Lấy token thất bại", task.exception)
-                return@addOnCompleteListener
-            }
-            val token = task.result
-            Log.d("FCM", "Token của thiết bị: $token")
-        }
-        CoroutineScope(Dispatchers.IO).launch {
-            val projectId = "shoponline-f6905"
-
-            val googleCredentials = try {
-                val inputStream = context.assets.open("service-account.json")
-                GoogleCredentials.fromStream(inputStream)
-                    .createScoped(listOf("https://www.googleapis.com/auth/firebase.messaging"))
-            } catch (e: IOException) {
-                Log.e("RoomChatViewModel", "Error reading service-account.json", e)
-                return@launch
-            }
-
-            try {
-                googleCredentials.refreshIfExpired()
-            } catch (e: IOException) {
-                Log.e("RoomChatViewModel", "Error refreshing Google credentials", e)
-                return@launch
-            }
-
-            val accessToken = googleCredentials.accessToken.tokenValue
-
-            val notificationJson = JSONObject().apply {
-                put("title", senderName)
-                put("body", messageText)
-            }
-
-            val dataJson = JSONObject().apply {
-                put("title", senderName)
-                put("message", messageText)
-            }
-
-            val messageJson = JSONObject().apply {
-                put("token", recipientToken)
-                put("notification", notificationJson)
-                put("data", dataJson)
-            }
-
-            val requestBodyJson = JSONObject().apply {
-                put("message", messageJson)
-            }
-
-            val client = OkHttpClient()
-            val mediaType = "application/json; UTF-8".toMediaTypeOrNull()
-            val requestBody = requestBodyJson.toString().toRequestBody(mediaType)
-
-            val request = Request.Builder()
-                .url("https://fcm.googleapis.com/v1/projects/$projectId/messages:send")
-                .addHeader("Authorization", "Bearer $accessToken")
-                .addHeader("Content-Type", "application/json; UTF-8")
-                .post(requestBody)
-                .build()
-
-            try {
-                val response = client.newCall(request).execute()
-                if (response.isSuccessful) {
-                    Log.d("RoomChatViewModel", "Notification sent successfully!")
-                } else {
-                    Log.e("RoomChatViewModel", "Error sending notification: ${response.message}")
-                }
-            } catch (e: IOException) {
-                Log.e("RoomChatViewModel", "Error executing FCM request", e)
-            }
-        }
-    }
-
     override fun onDestroyView() {
         super.onDestroyView()
-        stopAnimation() // Dừng và ẩn progressBar khi fragment bị hủy
+        stopAnimation()
         LocalBroadcastManager.getInstance(requireContext()).unregisterReceiver(paymentSuccessReceiver)
         _binding = null
     }

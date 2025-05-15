@@ -324,11 +324,18 @@ class CinemaDetailActivity : AppCompatActivity(), OnMapReadyCallback {
 
     fun generateDays(startDate: LocalDate, numberOfDays: Int): List<Day> {
         val days = mutableListOf<Day>()
+        val vietnameseLocale = Locale("vi", "VN")
+        val today = LocalDate.now()
         for (i in 0 until numberOfDays) {
             val date = startDate.plusDays(i.toLong())
+            val dayName = if (date.isEqual(today)) {
+                "Hôm nay"
+            } else {
+                date.dayOfWeek.getDisplayName(TextStyle.FULL, vietnameseLocale)
+            }
             val day = Day(
                 dayNumber = String.format("%02d", date.dayOfMonth),
-                dayName = date.dayOfWeek.getDisplayName(TextStyle.SHORT, Locale.ENGLISH),
+                dayName = dayName,
                 fullDate = date,
                 isSelected = i == 0
             )
