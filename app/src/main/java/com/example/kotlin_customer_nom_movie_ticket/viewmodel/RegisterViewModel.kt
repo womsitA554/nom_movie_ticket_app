@@ -6,7 +6,6 @@ import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.example.kotlin_customer_nom_movie_ticket.data.firebase.FirebaseHelper
 import com.example.kotlin_customer_nom_movie_ticket.data.model.Customer
 import com.example.kotlin_customer_nom_movie_ticket.data.repository.RegisterRepository
 import com.google.firebase.storage.FirebaseStorage

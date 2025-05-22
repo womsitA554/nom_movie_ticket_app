@@ -73,7 +73,7 @@ class ComingSoonDetailActivity : AppCompatActivity() {
 
         binding.tvTitle.text = movieTitle
         binding.tvAgeRate.text = movieAgeRating
-        binding.tvDuration.text = "$movieDuration minutes"
+        binding.tvDuration.text = "$movieDuration phút"
         binding.tvGenre.text = movieGenre
         binding.tvSynopsis.text = movieSynopsis
         Glide.with(this).load(moviePosterUrl).into(binding.picMovie)

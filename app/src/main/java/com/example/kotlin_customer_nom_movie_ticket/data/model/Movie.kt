@@ -23,7 +23,8 @@ data class Movie(
 enum class MovieStatus {
     isShowing,
     isComing,
-    isClosed
+    isClosed,
+    isReviewing
 }
 
 data class MovieRating(

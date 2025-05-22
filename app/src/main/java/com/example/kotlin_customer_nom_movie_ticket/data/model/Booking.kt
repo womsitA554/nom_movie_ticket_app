@@ -23,6 +23,7 @@ data class Booking(
     val food_price: Double = 0.0,
     val convenience_fee: Double = 0.0,
     val total_price: Double = 0.0,
+    val discount: Double = 0.0,
     val payment_method: String? = null,
     val payment_status: String? = null,
     val order_id: String? = null,

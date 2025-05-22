@@ -36,7 +36,7 @@ class BookingDetailActivity : AppCompatActivity() {
         binding.tvShowtimeTime.text = booking.showtime_time
         binding.tvCinemaName.text = booking.cinema_name
         binding.tvSeats.text = booking.seat_ids.toString()
-        binding.tvDuration.text = booking.duration.toString() + " minutes"
+        binding.tvDuration.text = booking.duration.toString() + " phút"
         binding.tvDirectorName.text = booking.director
         binding.tvAgeRate.text = booking.age_rating
         binding.tvGenre.text = booking.genre
@@ -45,6 +45,18 @@ class BookingDetailActivity : AppCompatActivity() {
         binding.tvDate.text = booking.date
         binding.tvShowtimeTime.text = booking.time
         binding.tvFee.text = formatter.format(booking.convenience_fee) + "đ"
+        if (booking.food_price > 0) {
+            binding.lnFoodPrice.visibility = android.view.View.VISIBLE
+            binding.tvPriceOfFood.text = formatter.format(booking.food_price) + "đ"
+        } else {
+            binding.lnFoodPrice.visibility = android.view.View.GONE
+        }
+        if (booking.discount > 0) {
+            binding.lnDiscount.visibility = android.view.View.VISIBLE
+            binding.tvDiscount.text = formatter.format(booking.discount) + "đ"
+        } else {
+            binding.lnDiscount.visibility = android.view.View.GONE
+        }
         binding.tvActualPay.text = formatter.format(booking.total_price) + "đ"
         binding.tvTotalPrice.text = formatter.format(booking.total_price) + "đ"
         binding.tvStatusPayment.text = booking.payment_status

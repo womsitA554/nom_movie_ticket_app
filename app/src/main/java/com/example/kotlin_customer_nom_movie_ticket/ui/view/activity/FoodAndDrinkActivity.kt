@@ -286,7 +286,6 @@ class FoodAndDrinkActivity : AppCompatActivity() {
 
     private fun checkAllDataLoaded() {
         if (isFoodLoaded && isDrinkLoaded && isComboLoaded) {
-            // Tất cả dữ liệu đã load, cập nhật UI
             stopAnimation()
             binding.scrollView.visibility = View.VISIBLE
             binding.rcvFood.visibility = View.VISIBLE
@@ -297,8 +296,8 @@ class FoodAndDrinkActivity : AppCompatActivity() {
     }
 
     private fun stopAnimation() {
-        binding.progressBar.cancelAnimation() // Dừng animation
-        binding.progressBar.visibility = View.GONE // Ẩn progressBar
+        binding.progressBar.cancelAnimation()
+        binding.progressBar.visibility = View.GONE
     }
 
     private fun hideCartLayout() {

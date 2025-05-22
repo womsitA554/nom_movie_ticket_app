@@ -35,7 +35,7 @@
                 android:layout_weight="1"
                 android:fontFamily="@font/urbanist_bold"
                 android:gravity="center"
-                android:text="Tài khoản"
+                android:text="Cài đặt"
                 style="@style/TextColor"
                 android:textSize="23sp"
                 android:textStyle="bold" />

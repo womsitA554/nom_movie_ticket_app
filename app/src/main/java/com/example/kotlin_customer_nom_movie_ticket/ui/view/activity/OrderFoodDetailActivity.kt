@@ -51,10 +51,19 @@ class OrderFoodDetailActivity : AppCompatActivity() {
         val formatter = NumberFormat.getNumberInstance(Locale("vi", "VN"))
 
         val foodPrice = foodBooking.total_price
+        val fee = foodBooking.fee
+        val discount = foodBooking.discount
+        val totalPrice = foodBooking.total_price_to_pay
         binding.tvFoodPrice.text = formatter.format(foodPrice) + "đ"
-        binding.tvFee.text = formatter.format(foodPrice * 0.3) + "đ"
-        binding.tvActualPay.text = formatter.format(foodPrice + foodPrice * 0.03) + "đ"
-        binding.tvTotalPrice.text = formatter.format(foodPrice + foodPrice * 0.03) + "đ"
+        binding.tvFee.text =  formatter.format(fee) + "đ"
+        if (discount > 0) {
+            binding.lnDiscount.visibility = android.view.View.VISIBLE
+            binding.tvDiscount.text = formatter.format(discount) + "đ"
+        } else {
+            binding.lnDiscount.visibility = android.view.View.GONE
+        }
+        binding.tvActualPay.text = formatter.format(totalPrice) + "đ"
+        binding.tvTotalPrice.text = formatter.format(totalPrice) + "đ"
         binding.tvStatusPayment.text = foodBooking.payment_status
         binding.tvPaymentMethod.text = foodBooking.payment_method
         binding.tvBookingId.text = foodBooking.food_bill_id

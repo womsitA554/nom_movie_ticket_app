@@ -53,7 +53,6 @@ class CinemaDetailActivity : AppCompatActivity(), OnMapReadyCallback {
     private lateinit var userId: String
     private var isFavorite = false
 
-    // Biến để theo dõi trạng thái load
     private var isMapLoaded = false
     private var isDaysLoaded = false
     private var isMoviesAndShowtimesLoaded = false
@@ -64,9 +63,8 @@ class CinemaDetailActivity : AppCompatActivity(), OnMapReadyCallback {
         binding = ActivityCinemaDetailBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // Khởi tạo UI ban đầu: hiển thị progressBar, ẩn nestedScrollView
         binding.progressBar.visibility = View.VISIBLE
-        binding.progressBar.playAnimation() // Bắt đầu animation
+        binding.progressBar.playAnimation()
         binding.nestedScrollView.visibility = View.GONE
 
         val isDarkMode = (resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES

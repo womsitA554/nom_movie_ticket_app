@@ -1,26 +1,18 @@
 package com.example.kotlin_customer_nom_movie_ticket.ui.view.fragment
 
-import android.app.AlertDialog
-import android.app.Dialog
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.os.Bundle
 import android.util.Log
-import android.view.Gravity
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.WindowManager
 import android.widget.Button
-import android.widget.EditText
 import android.widget.ImageView
 import android.widget.TextView
-import android.widget.Toast
-import androidx.constraintlayout.widget.ConstraintLayout
-import androidx.core.content.res.ResourcesCompat
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -50,7 +42,6 @@ class FoodAndDrinkFragment : Fragment() {
     private lateinit var broadcastReceiver: BroadcastReceiver
 
     // Biến để theo dõi trạng thái load của từng danh mục
-    private var isPopularFoodLoaded = false
     private var isFoodLoaded = false
     private var isDrinkLoaded = false
     private var isComboLoaded = false
@@ -105,13 +96,20 @@ class FoodAndDrinkFragment : Fragment() {
     }
 
     private fun setupObservers() {
-
         foodViewModel.food.observe(viewLifecycleOwner) { foodList ->
             isFoodLoaded = true
             foodAdapter = FoodAdapter(foodList, false)
             binding.rcvFood.adapter = foodAdapter
             foodAdapter.onClickItem = { food, _ ->
-                showBottomSheetDialog(food.itemId, food.picUrl, food.title, food.description, food.price ?: 9.00)
+                Log.d("FoodAndDrinkFragment", "Food clicked: ${food.title}, itemId: ${food.itemId}, isAvailable: ${food.isAvailable}")
+                showBottomSheetDialog(
+                    food.itemId,
+                    food.picUrl,
+                    food.title,
+                    food.description,
+                    food.price,
+                    food.isAvailable!!
+                )
             }
             checkAllDataLoaded()
         }
@@ -121,7 +119,15 @@ class FoodAndDrinkFragment : Fragment() {
             foodAdapter = FoodAdapter(foodList, false)
             binding.rcvDrink.adapter = foodAdapter
             foodAdapter.onClickItem = { food, _ ->
-                showBottomSheetDialog(food.itemId, food.picUrl, food.title, food.description, food.price ?: 9.00)
+                Log.d("FoodAndDrinkFragment", "Drink clicked: ${food.title}, itemId: ${food.itemId}, isAvailable: ${food.isAvailable}")
+                showBottomSheetDialog(
+                    food.itemId,
+                    food.picUrl,
+                    food.title,
+                    food.description,
+                    food.price,
+                    food.isAvailable!!
+                )
             }
             checkAllDataLoaded()
         }
@@ -131,11 +137,18 @@ class FoodAndDrinkFragment : Fragment() {
             foodAdapter = FoodAdapter(foodList, false)
             binding.rcvCombo.adapter = foodAdapter
             foodAdapter.onClickItem = { food, _ ->
-                showBottomSheetDialog(food.itemId, food.picUrl, food.title, food.description, food.price ?: 9.00)
+                Log.d("FoodAndDrinkFragment", "Combo clicked: ${food.title}, itemId: ${food.itemId}, isAvailable: ${food.isAvailable}")
+                showBottomSheetDialog(
+                    food.itemId,
+                    food.picUrl,
+                    food.title,
+                    food.description,
+                    food.price,
+                    food.isAvailable!!
+                )
             }
             checkAllDataLoaded()
         }
-
     }
 
     private fun checkAllDataLoaded() {
@@ -191,7 +204,15 @@ class FoodAndDrinkFragment : Fragment() {
         binding.rcvCombo.addItemDecoration(HorizontalSpaceItemDecoration(spaceInPixels))
     }
 
-    private fun showBottomSheetDialog(itemId: String, img: String, title: String, description: String, price: Double) {
+    private fun showBottomSheetDialog(
+        itemId: String,
+        img: String,
+        title: String,
+        description: String,
+        price: Double,
+        isAvailable: Boolean
+    ) {
+        Log.d("FoodAndDrinkFragment", "showBottomSheetDialog: $itemId, $title, isAvailable: $isAvailable")
         val dialog = BottomSheetDialog(requireContext())
         dialog.setContentView(R.layout.bottom_sheet_food)
 
@@ -209,36 +230,47 @@ class FoodAndDrinkFragment : Fragment() {
         tvTitle?.text = title
         tvDescription?.text = description
         tvQuantity?.text = quantity.toString()
-        val formatter = NumberFormat.getNumberInstance(Locale("vi", "VN"))
-        btnContinue?.text = "Thêm vào giỏ hàng - ${formatter.format((price * quantity).toInt())}đ"
-        btnAdd?.setOnClickListener {
-            quantity++
-            tvQuantity?.text = quantity.toString()
-            val formatter = NumberFormat.getNumberInstance(Locale("vi", "VN"))
-            btnContinue?.text = "Thêm vào giỏ hàng - ${formatter.format((price * quantity).toInt())}đ"        }
 
-        btnRemove?.setOnClickListener {
-            if (quantity > 1) {
-                quantity--
+        if (isAvailable) {
+            // Food is available, enable button and set price
+            val formatter = NumberFormat.getNumberInstance(Locale("vi", "VN"))
+            btnContinue?.text = "Thêm vào giỏ hàng - ${formatter.format((price * quantity).toInt())}đ"
+            btnContinue?.isEnabled = true
+            btnAdd?.isEnabled = true
+            btnRemove?.isEnabled = true
+            btnAdd?.setOnClickListener {
+                quantity++
                 tvQuantity?.text = quantity.toString()
-                val formatter = NumberFormat.getNumberInstance(Locale("vi", "VN"))
-                btnContinue?.text = "Thêm vào giỏ hàng - ${formatter.format((price * quantity).toInt())}đ"            }
+                btnContinue?.text = "Thêm vào giỏ hàng - ${formatter.format((price * quantity).toInt())}đ"
+            }
+            btnRemove?.setOnClickListener {
+                if (quantity > 1) {
+                    quantity--
+                    tvQuantity?.text = quantity.toString()
+                    btnContinue?.text = "Thêm vào giỏ hàng - ${formatter.format((price * quantity).toInt())}đ"
+                }
+            }
+            btnContinue?.setOnClickListener {
+                val cartItem = Cart(
+                    itemId = itemId,
+                    title = title,
+                    picUrl = img,
+                    price = price * quantity,
+                    quantity = quantity
+                )
+                cartManager.addItemToCart(userId, cartItem, quantity)
+                updateCartUI()
+                dialog.dismiss()
+            }
+        } else {
+            // Food is not available, disable button and show out-of-stock message
+            btnContinue?.text = "Tạm thời hết hàng"
+            btnContinue?.isEnabled = false
+            btnAdd?.isEnabled = false
+            btnRemove?.isEnabled = false
         }
 
         btnCancel?.setOnClickListener {
-            dialog.dismiss()
-        }
-
-        btnContinue?.setOnClickListener {
-            val cartItem = Cart(
-                itemId = itemId,
-                title = title,
-                picUrl = img,
-                price = price * quantity,
-                quantity = quantity
-            )
-            cartManager.addItemToCart(userId, cartItem, quantity)
-            updateCartUI()
             dialog.dismiss()
         }
 

@@ -472,6 +472,7 @@
                 </LinearLayout>
 
                 <LinearLayout
+                    android:id="@+id/lnFoodPrice"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:layout_marginHorizontal="15dp"
@@ -517,6 +518,34 @@
 
                     <TextView
                         android:id="@+id/tvFee"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="end"
+                        android:fontFamily="@font/urbanist_bold"
+                        style="@style/TextColor"
+                        android:textStyle="bold" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/lnDiscount"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_marginHorizontal="15dp"
+                    android:layout_marginTop="12dp"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/textView150"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:fontFamily="@font/urbanist_regular"
+                        android:text="Giảm giá"
+                        style="@style/TextColor"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/tvDiscount"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_gravity="end"
@@ -600,7 +629,7 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:fontFamily="@font/urbanist_regular"
-                        android:text="Số lượng"
+                        android:text="Tổng tiền"
                         style="@style/TextColor"
                         android:textStyle="bold" />
 
@@ -640,7 +669,7 @@
                         android:background="@drawable/seat_selected_background"
                         android:fontFamily="@font/urbanist_bold"
                         android:padding="5dp"
-                        android:text="Paid"
+                        android:text="Đã thanh toán"
                         android:textColor="@color/white"
                         android:textSize="11sp"
                         android:textStyle="bold" />

@@ -132,7 +132,7 @@
                         android:layout_marginStart="10dp"
                         android:fontFamily="@font/urbanist_regular"
                         android:text="Bạn cần chọn thời gian nhận"
-                        android:textColor="@color/dark_grey"
+                        style="@style/TextColor"
                         android:textSize="15sp"
                         android:textStyle="bold" />
                 </LinearLayout>
@@ -178,7 +178,7 @@
                         android:layout_weight="1"
                         android:fontFamily="@font/urbanist_regular"
                         android:text="Giá đồ ăn"
-                        android:textColor="@color/dark_grey"
+                        style="@style/TextColor"
                         android:textStyle="bold" />
 
                     <TextView
@@ -205,11 +205,39 @@
                         android:layout_weight="1"
                         android:fontFamily="@font/urbanist_regular"
                         android:text="Phí tiện lợi"
-                        android:textColor="@color/dark_grey"
+                        style="@style/TextColor"
                         android:textStyle="bold" />
 
                     <TextView
                         android:id="@+id/tvFee"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="end"
+                        android:fontFamily="@font/urbanist_bold"
+                        style="@style/TextColor"
+                        android:textStyle="bold" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/lnDiscount"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_marginHorizontal="15dp"
+                    android:layout_marginTop="12dp"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/textView150"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:fontFamily="@font/urbanist_regular"
+                        android:text="Giảm giá"
+                        style="@style/TextColor"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/tvDiscount"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_gravity="end"
@@ -233,7 +261,7 @@
                         android:layout_weight="1"
                         android:fontFamily="@font/urbanist_regular"
                         android:text="Cần thanh toán"
-                        android:textColor="@color/dark_grey"
+                        style="@style/TextColor"
                         android:textStyle="bold" />
 
                     <TextView
@@ -286,8 +314,8 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:fontFamily="@font/urbanist_regular"
-                        android:text="Số lượng"
-                        android:textColor="@color/dark_grey"
+                        android:text="Tổng tiền"
+                        style="@style/TextColor"
                         android:textStyle="bold" />
 
                     <TextView
@@ -315,7 +343,7 @@
                         android:layout_weight="1"
                         android:fontFamily="@font/urbanist_regular"
                         android:text="Trạng thái"
-                        android:textColor="@color/dark_grey"
+                        style="@style/TextColor"
                         android:textStyle="bold" />
 
                     <TextView
@@ -346,7 +374,7 @@
                         android:layout_weight="1"
                         android:fontFamily="@font/urbanist_regular"
                         android:text="Phương thức thanh toán"
-                        android:textColor="@color/dark_grey"
+                        style="@style/TextColor"
                         android:textStyle="bold" />
 
                     <TextView
@@ -374,7 +402,7 @@
                         android:layout_weight="1"
                         android:fontFamily="@font/urbanist_regular"
                         android:text="Mã đơn hàng"
-                        android:textColor="@color/dark_grey"
+                        style="@style/TextColor"
                         android:textStyle="bold" />
 
                     <TextView
@@ -408,7 +436,7 @@
                 android:lineSpacingExtra="3dp"
                 android:fontFamily="@font/urbanist_regular"
                 android:text="Việc mua và nhận thức ăn hoặc đồ uống chỉ có thể thực hiện trong cùng ngày."
-                android:textColor="@color/dark_grey"
+                style="@style/TextColor"
                 android:textStyle="bold" />
 
             <TextView
@@ -422,7 +450,7 @@
                 android:lineSpacingExtra="3dp"
                 android:fontFamily="@font/urbanist_regular"
                 android:text="Nếu bạn gọi đồ ăn hoặc đồ uống để xem phim, chúng tôi khuyên bạn nên gọi đồ ăn hoặc đồ uống trước khi phim bắt đầu 10 phút."
-                android:textColor="@color/dark_grey"
+                style="@style/TextColor"
                 android:textStyle="bold" />
 
             <TextView
@@ -436,7 +464,7 @@
                 android:layout_weight="1"
                 android:fontFamily="@font/urbanist_regular"
                 android:text="Food and drinks that are not picked up after the 30 minutes time limit cannot be refunded."
-                android:textColor="@color/dark_grey"
+                style="@style/TextColor"
                 android:textStyle="bold" />
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>

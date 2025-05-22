@@ -425,8 +425,14 @@ class ChooseSeatActivity : AppCompatActivity() {
             .get()
             .await()
 
-        val sdf = java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm", java.util.Locale.getDefault())
-        val showtimeDate = sdf.parse(showtimeTime)
+        val sdf = java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", java.util.Locale.getDefault())
+        val showtimeDate = try {
+            sdf.parse(showtimeTime)
+        } catch (e: Exception) {
+            Log.e("PricePerSeat", "Failed to parse showtimeTime: $showtimeTime", e)
+            return null
+        }
+
         val isWeekend = showtimeDate?.let {
             val calendar = java.util.Calendar.getInstance().apply { time = it }
             calendar.get(java.util.Calendar.DAY_OF_WEEK) in listOf(
@@ -442,38 +448,52 @@ class ChooseSeatActivity : AppCompatActivity() {
                 else -> "Evening"
             }
         } ?: "Morning"
+        val showtimeDateStr = showtimeDate?.let {
+            java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault()).format(it)
+        }
+
+        Log.d("PricePerSeat", "Querying TicketPrices for cinemaId=$cinemaId, movieId=$movieId, seatType=$seatType, isWeekend=$isWeekend, timeRange=$timeRange, showtimeDate=$showtimeDateStr")
+
         for (priceSnapshot in snapshot.children) {
             val priceCinemaId = priceSnapshot.child("cinema_id").getValue(String::class.java)
             val priceMovieId = priceSnapshot.child("movie_id").getValue(String::class.java)
             val priceSeatType = priceSnapshot.child("seat_type").getValue(String::class.java)
-            val priceIsWeekend =
-                priceSnapshot.child("is_weekend").getValue(Boolean::class.java) ?: false
+            val priceIsWeekend = priceSnapshot.child("is_weekend").getValue(Boolean::class.java) ?: false
             val priceTimeRange = priceSnapshot.child("time_range").getValue(String::class.java)
             val price = priceSnapshot.child("price").getValue(Double::class.java)
+            val priceEffectiveDate = priceSnapshot.child("effective_date").getValue(String::class.java)
+            val ticketPriceId = priceSnapshot.child("ticket_price_id").getValue(String::class.java)
 
             Log.d(
                 "PricePerSeat",
-                "cinemaId=$cinemaId, movieId=$movieId, seatType=$seatType, isWeekend=$isWeekend, timeRange=$timeRange, price=$price"
+                "Found entry: ticket_price_id=$ticketPriceId, cinemaId=$priceCinemaId, movieId=$priceMovieId, seatType=$priceSeatType, " +
+                        "isWeekend=$priceIsWeekend, timeRange=$priceTimeRange, price=$price, effectiveDate=$priceEffectiveDate"
             )
 
             if (price == null) {
                 Log.e(
                     "PricePerSeat",
-                    "No price found for cinemaId=$cinemaId, movieId=$movieId, seatType=$seatType, isWeekend=$isWeekend, timeRange=$timeRange"
+                    "No price value for ticket_price_id=$ticketPriceId, cinemaId=$cinemaId, movieId=$movieId, seatType=$seatType"
                 )
-                return 0.0
+                continue
             }
 
             if (priceCinemaId == cinemaId &&
                 priceMovieId == movieId &&
                 priceSeatType == seatType &&
                 priceIsWeekend == isWeekend &&
-                priceTimeRange == timeRange
+                priceTimeRange == timeRange &&
+                priceEffectiveDate == showtimeDateStr
             ) {
+                Log.d("PricePerSeat", "Matched price: $price for ticket_price_id=$ticketPriceId")
                 return price
             }
         }
 
+        Log.e(
+            "PricePerSeat",
+            "No matching price found for cinemaId=$cinemaId, movieId=$movieId, seatType=$seatType, isWeekend=$isWeekend, timeRange=$timeRange, showtimeDate=$showtimeDateStr"
+        )
         return null
     }
 

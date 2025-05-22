@@ -24,7 +24,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import com.bumptech.glide.Glide
 import com.example.kotlin_customer_nom_movie_ticket.R
-import com.example.kotlin_customer_nom_movie_ticket.data.firebase.FirebaseHelper
 import com.example.kotlin_customer_nom_movie_ticket.databinding.ActivitySettingProfileBinding
 import com.example.kotlin_customer_nom_movie_ticket.util.SessionManager
 import com.example.kotlin_customer_nom_movie_ticket.viewmodel.SettingProfileViewModel
@@ -37,7 +36,6 @@ class SettingProfileActivity : AppCompatActivity() {
     private lateinit var settingProfileViewModel: SettingProfileViewModel
     private lateinit var binding: ActivitySettingProfileBinding
     private lateinit var sharedPreferences: SharedPreferences
-    private lateinit var firebaseHelper: FirebaseHelper
     private lateinit var firebaseAuth: FirebaseAuth
     private var userId = ""
     private var selectedAvatarImageUri: Uri? = null
@@ -55,7 +53,6 @@ class SettingProfileActivity : AppCompatActivity() {
         binding = ActivitySettingProfileBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        firebaseHelper = FirebaseHelper()
         firebaseAuth = FirebaseAuth.getInstance()
         settingProfileViewModel = SettingProfileViewModel()
         binding.btnSave.visibility = View.GONE

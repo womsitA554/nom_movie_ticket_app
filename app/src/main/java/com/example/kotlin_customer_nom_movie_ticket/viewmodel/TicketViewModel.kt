@@ -69,71 +69,72 @@ class TicketViewModel : ViewModel() {
             _isLoading.value = true
             Log.d("TicketViewModel", "Fetching bookings, isLoading: ${_isLoading.value}")
             _error.value = null
-            try {
-                val allBookings = ticketRepository.getBookingsByCustomerId(customerId)
-                _upcomingBookings.value = allBookings.filter { it.isUpcoming }
-                _passedBookings.value = allBookings.filter { !it.isUpcoming }
+            val result = ticketRepository.getBookingsByCustomerId(customerId)
+            if (result.isSuccess) {
+                val bookings = result.getOrNull() ?: emptyList()
+                _upcomingBookings.value = bookings.filter { it.isUpcoming }
+                _passedBookings.value = bookings.filter { !it.isUpcoming }
                 Log.d("TicketViewModel", "Fetched bookings: upcoming=${_upcomingBookings.value?.size}, passed=${_passedBookings.value?.size}")
-            } catch (e: Exception) {
-                _error.value = "Failed to load bookings: ${e.message}"
-                Log.e("TicketViewModel", "Failed to load bookings", e)
-            } finally {
-                _isLoading.value = false
-                Log.d("TicketViewModel", "Bookings fetch complete, isLoading: ${_isLoading.value}")
+            } else {
+                val errorMessage = "Không thể tải danh sách vé: ${result.exceptionOrNull()?.message}"
+                _error.value = errorMessage
+                Log.e("TicketViewModel", "Failed to load bookings", result.exceptionOrNull())
             }
+            _isLoading.value = false
+            Log.d("TicketViewModel", "Bookings fetch complete, isLoading: ${_isLoading.value}")
         }
     }
 
-    fun fetchFoodBookings(customerId: String) {
-        viewModelScope.launch {
-            _isLoading.value = true
-            Log.d("TicketViewModel", "Fetching food bookings, isLoading: ${_isLoading.value}")
-            _error.value = null
-            try {
-                val allFoodBookings = ticketRepository.getFoodBookingByCustomerId(customerId)
-                if (allFoodBookings.isEmpty()) {
-                    Log.d("TicketViewModel", "No food bookings found for customerId: $customerId")
-                    _upComingFoodBookings.value = emptyList()
-                    _passedFoodBookings.value = emptyList()
-                } else {
-                    val currentTime = System.currentTimeMillis()
-                    val dateFormat = SimpleDateFormat("EEEE, dd 'thg' M, yyyy HH:mm", Locale("vi", "VN")).apply {
-                        timeZone = TimeZone.getTimeZone("Asia/Ho_Chi_Minh")
-                    }
-
-                    _upComingFoodBookings.value = allFoodBookings.filter { booking ->
-                        try {
-                            val pickUpTimeMillis = dateFormat.parse(booking.pick_up_time)?.time ?: 0L
-                            pickUpTimeMillis > currentTime
-                        } catch (e: Exception) {
-                            Log.e("TicketViewModel", "Error parsing pick_up_time: ${booking.pick_up_time}", e)
-                            false
+        fun fetchFoodBookings(customerId: String) {
+            viewModelScope.launch {
+                _isLoading.value = true
+                Log.d("TicketViewModel", "Fetching food bookings, isLoading: ${_isLoading.value}")
+                _error.value = null
+                try {
+                    val allFoodBookings = ticketRepository.getFoodBookingByCustomerId(customerId)
+                    if (allFoodBookings.isEmpty()) {
+                        Log.d("TicketViewModel", "No food bookings found for customerId: $customerId")
+                        _upComingFoodBookings.value = emptyList()
+                        _passedFoodBookings.value = emptyList()
+                    } else {
+                        val currentTime = System.currentTimeMillis()
+                        val dateFormat = SimpleDateFormat("EEEE, dd 'thg' M, yyyy HH:mm", Locale("vi", "VN")).apply {
+                            timeZone = TimeZone.getTimeZone("Asia/Ho_Chi_Minh")
                         }
-                    }
 
-                    _passedFoodBookings.value = allFoodBookings.filter { booking ->
-                        try {
-                            val pickUpTimeMillis = dateFormat.parse(booking.pick_up_time)?.time ?: 0L
-                            pickUpTimeMillis <= currentTime
-                        } catch (e: Exception) {
-                            Log.e("TicketViewModel", "Error parsing pick_up_time: ${booking.pick_up_time}", e)
-                            true
+                        _upComingFoodBookings.value = allFoodBookings.filter { booking ->
+                            try {
+                                val pickUpTimeMillis = dateFormat.parse(booking.pick_up_time)?.time ?: 0L
+                                pickUpTimeMillis > currentTime
+                            } catch (e: Exception) {
+                                Log.e("TicketViewModel", "Error parsing pick_up_time: ${booking.pick_up_time}", e)
+                                false
+                            }
                         }
-                    }
 
-                    Log.d("TicketViewModel", "Food bookings fetched: upcoming=${_upComingFoodBookings.value?.size}, passed=${_passedFoodBookings.value?.size}")
+                        _passedFoodBookings.value = allFoodBookings.filter { booking ->
+                            try {
+                                val pickUpTimeMillis = dateFormat.parse(booking.pick_up_time)?.time ?: 0L
+                                pickUpTimeMillis <= currentTime
+                            } catch (e: Exception) {
+                                Log.e("TicketViewModel", "Error parsing pick_up_time: ${booking.pick_up_time}", e)
+                                true
+                            }
+                        }
+
+                        Log.d("TicketViewModel", "Food bookings fetched: upcoming=${_upComingFoodBookings.value?.size}, passed=${_passedFoodBookings.value?.size}")
+                    }
+                } catch (e: Exception) {
+                    _error.value = "Failed to load food bookings: ${e.message}"
+                    Log.e("TicketViewModel", "Failed to load food bookings", e)
+                } finally {
+                    _isLoading.value = false
+                    Log.d("TicketViewModel", "Food bookings fetch complete, isLoading: ${_isLoading.value}")
                 }
-            } catch (e: Exception) {
-                _error.value = "Failed to load food bookings: ${e.message}"
-                Log.e("TicketViewModel", "Failed to load food bookings", e)
-            } finally {
-                _isLoading.value = false
-                Log.d("TicketViewModel", "Food bookings fetch complete, isLoading: ${_isLoading.value}")
             }
         }
-    }
 
-    fun saveFoodBooking(billId: String?, cartManager: CartManager, userId: String, totalPriceToPay: Double, pickUpTime: String) {
+    fun saveFoodBooking(billId: String?, cartManager: CartManager, userId: String, totalPriceToPay: Double, fee: Double, discount: Double, pickUpTime: String) {
         viewModelScope.launch {
             val cartItems = cartManager.getCart(userId)
             if (cartItems.isEmpty()) {
@@ -149,6 +150,9 @@ class TicketViewModel : ViewModel() {
                 "customer_id" to userId,
                 "food_items" to cartItems.map { it.toMap() },
                 "total_price" to totalPriceToPay,
+                "fee" to fee,
+                "total_price_to_pay" to totalPriceToPay + fee - discount,
+                "discount" to discount,
                 "payment_method" to "Stripe",
                 "payment_status" to "Paid",
                 "order_time" to createdAt,
@@ -174,6 +178,7 @@ class TicketViewModel : ViewModel() {
         totalPriceSeats: Double,
         totalPriceFood: Double,
         fee: Double,
+        discount: Double,
         actualPay: Double,
         cartManager: CartManager,
         pickUpTime: String
@@ -191,6 +196,7 @@ class TicketViewModel : ViewModel() {
                     totalPriceSeats,
                     totalPriceFood,
                     fee,
+                    discount,
                     actualPay,
                     cartManager,
                     pickUpTime

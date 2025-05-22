@@ -8,6 +8,7 @@ import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import android.widget.EditText
 import android.widget.RatingBar
 import android.widget.TextView
 import android.widget.Toast
@@ -26,19 +27,24 @@ import com.example.kotlin_customer_nom_movie_ticket.data.model.Movie
 import com.example.kotlin_customer_nom_movie_ticket.databinding.ActivityNowPlayingDetailBinding
 import com.example.kotlin_customer_nom_movie_ticket.service.Notification.NotificationWorker
 import com.example.kotlin_customer_nom_movie_ticket.ui.adapter.ActorAdapter
+import com.example.kotlin_customer_nom_movie_ticket.ui.adapter.ReviewAdapter
 import com.example.kotlin_customer_nom_movie_ticket.util.SessionManager
 import com.example.kotlin_customer_nom_movie_ticket.viewmodel.ActorViewModel
 import com.example.kotlin_customer_nom_movie_ticket.viewmodel.DirectorViewModel
+import com.example.kotlin_customer_nom_movie_ticket.viewmodel.MovieViewModel
+import com.example.kotlin_customer_nom_movie_ticket.viewmodel.ProfileViewModel
 import com.example.kotlin_customer_nom_movie_ticket.viewmodel.TicketViewModel
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.auth.oauth2.GoogleCredentials
+import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.MutableData
 import com.google.firebase.database.Transaction
+import com.google.firebase.database.database
 import com.google.firebase.messaging.FirebaseMessaging
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -57,6 +63,10 @@ class NowPlayingDetailActivity : AppCompatActivity() {
     private lateinit var actorAdapter: ActorAdapter
     private lateinit var actorViewModel: ActorViewModel
     private lateinit var ticketViewModel: TicketViewModel
+    private lateinit var profileViewModel: ProfileViewModel
+    private lateinit var reviewAdapter: ReviewAdapter
+    private lateinit var movieViewModel: MovieViewModel
+    private var userId = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -67,6 +77,8 @@ class NowPlayingDetailActivity : AppCompatActivity() {
         directorViewModel = ViewModelProvider(this)[DirectorViewModel::class.java]
         actorViewModel = ViewModelProvider(this)[ActorViewModel::class.java]
         ticketViewModel = ViewModelProvider(this)[TicketViewModel::class.java]
+        profileViewModel = ProfileViewModel()
+        movieViewModel = MovieViewModel()
 
         // Get data from Intent
         val movieId = intent.getStringExtra("movie_id")
@@ -97,11 +109,11 @@ class NowPlayingDetailActivity : AppCompatActivity() {
 
         binding.tvTitle.text = movieTitle
         binding.tvAgeRate.text = movieAgeRating
-        binding.tvDuration.text = "$movieDuration minutes"
+        binding.tvDuration.text = "$movieDuration phút"
         binding.tvGenre.text = movieGenre
         binding.tvSynopsis.text = movieSynopsis
         binding.tvRating.text = String.format("%.1f", movieRating)
-        binding.tvReviewer.text = "($movieQuantityVote reviews)"
+        binding.tvReviewer.text = "($movieQuantityVote đánh giá)"
         Glide.with(this).load(moviePosterUrl).into(binding.picMovie)
         Glide.with(this).load(movieBanner).into(binding.bannerMovie)
 
@@ -123,6 +135,9 @@ class NowPlayingDetailActivity : AppCompatActivity() {
         actorAdapter = ActorAdapter(emptyList())
         binding.rcvCast.adapter = actorAdapter
 
+        reviewAdapter = ReviewAdapter(this, emptyList(), movieId.toString())
+        binding.rcvRateText.adapter = reviewAdapter
+
         if (movieActorIds != null && movieActorIds.isNotEmpty()) {
             actorViewModel.fetchActorsByIds(movieActorIds)
             actorViewModel.actors.observe(this) { actors ->
@@ -133,7 +148,29 @@ class NowPlayingDetailActivity : AppCompatActivity() {
             Toast.makeText(this, "Không có diễn viên nào", Toast.LENGTH_SHORT).show()
         }
 
-        // Update RatingBar
+        if (movieId != null) {
+            movieViewModel.fetchRateText(movieId)
+            movieViewModel.textReviews.observe(this) { reviews ->
+                reviewAdapter.updateReviews(reviews)
+                if (reviews.isEmpty()) {
+                    binding.tvComment.visibility = View.GONE
+                    binding.rcvRateText.visibility = View.GONE
+                } else {
+                    binding.tvComment.visibility = View.VISIBLE
+                    binding.rcvRateText.visibility = View.VISIBLE
+                }
+            }
+            movieViewModel.hasMoreReviews.observe(this) { hasMore ->
+                reviewAdapter.setHasMoreReviews(hasMore)
+            }
+        }
+
+        reviewAdapter.onLoadMoreClick = {
+            if (movieId != null) {
+                movieViewModel.fetchRateText(movieId, true)
+            }
+        }
+
         val ratingNumber = movieRating / 2
         binding.ratingBar.rating = ratingNumber
 
@@ -174,7 +211,7 @@ class NowPlayingDetailActivity : AppCompatActivity() {
     }
 
     private fun checkRatingEligibility(movieId: String) {
-        val userId = FirebaseAuth.getInstance().currentUser?.uid
+        userId = SessionManager.getUserId(this).toString()
         if (userId == null) {
             bottomSheetCanNotRate()
             return
@@ -198,10 +235,7 @@ class NowPlayingDetailActivity : AppCompatActivity() {
     }
 
     private fun bottomSheetRate(movieId: String) {
-        val userId = FirebaseAuth.getInstance().currentUser?.uid
-        if (userId == null) {
-            return
-        }
+        val userId = FirebaseAuth.getInstance().currentUser?.uid ?: return
 
         val database = FirebaseDatabase.getInstance().reference
         val userRatingRef = database.child("UserRatings").child(userId).child(movieId)
@@ -209,68 +243,69 @@ class NowPlayingDetailActivity : AppCompatActivity() {
         userRatingRef.get().addOnSuccessListener { snapshot ->
             if (snapshot.exists()) {
                 bottomSheetAlreadyRated()
-            } else {
-                val dialog = BottomSheetDialog(this)
-                dialog.setContentView(R.layout.bottom_sheet_show_rate)
-                dialog.show()
+                return@addOnSuccessListener
+            }
 
-                val bottomSheet = dialog.findViewById<View>(com.google.android.material.R.id.design_bottom_sheet)
-                bottomSheet?.let {
-                    val behavior = BottomSheetBehavior.from(it)
-                    behavior.state = BottomSheetBehavior.STATE_EXPANDED
-                    behavior.peekHeight = 0
-                    behavior.isHideable = true
+            val dialog = BottomSheetDialog(this)
+            dialog.setContentView(R.layout.bottom_sheet_show_rate)
+            dialog.show()
 
-                    behavior.addBottomSheetCallback(object : BottomSheetBehavior.BottomSheetCallback() {
-                        override fun onStateChanged(customSheet: View, newState: Int) {
+            val bottomSheet = dialog.findViewById<View>(com.google.android.material.R.id.design_bottom_sheet)
+            bottomSheet?.let {
+                BottomSheetBehavior.from(it).apply {
+                    state = BottomSheetBehavior.STATE_EXPANDED
+                    peekHeight = 0
+                    isHideable = true
+                    addBottomSheetCallback(object : BottomSheetBehavior.BottomSheetCallback() {
+                        override fun onStateChanged(bottomSheet: View, newState: Int) {
                             if (newState == BottomSheetBehavior.STATE_HIDDEN) dialog.dismiss()
                         }
 
-                        override fun onSlide(customSheet: View, slideOffset: Float) {
+                        override fun onSlide(bottomSheet: View, slideOffset: Float) {
                             if (slideOffset < 0.01) dialog.dismiss()
                         }
                     })
                 }
+            }
 
-                val ratingBar1 = dialog.findViewById<RatingBar>(R.id.ratingBar1)
-                val ratingBar2 = dialog.findViewById<RatingBar>(R.id.ratingBar2)
-                val btnCancel = dialog.findViewById<Button>(R.id.btnCancel)
-                val btnRateNow = dialog.findViewById<Button>(R.id.btnRateNow)
+            val ratingBar1 = dialog.findViewById<RatingBar>(R.id.ratingBar1)
+            val ratingBar2 = dialog.findViewById<RatingBar>(R.id.ratingBar2)
+            val etReview = dialog.findViewById<EditText>(R.id.etReview)
+            val btnCancel = dialog.findViewById<Button>(R.id.btnCancel)
+            val btnRateNow = dialog.findViewById<Button>(R.id.btnRateNow)
 
-                ratingBar1?.rating = 0f
-                ratingBar2?.rating = 0f
+            ratingBar1?.rating = 0f
+            ratingBar2?.rating = 0f
 
-                ratingBar1?.setOnRatingBarChangeListener { _, rating, fromUser ->
-                    if (fromUser && rating > 0) {
-                        ratingBar2?.rating = 0f
-                    }
+            ratingBar1?.setOnRatingBarChangeListener { _, rating, fromUser ->
+                if (fromUser && rating > 0) ratingBar2?.rating = 0f
+            }
+
+            ratingBar2?.setOnRatingBarChangeListener { _, rating, fromUser ->
+                if (fromUser && rating > 0) ratingBar1?.rating = 5f
+            }
+
+            btnCancel?.setOnClickListener { dialog.dismiss() }
+
+            btnRateNow?.setOnClickListener {
+                val userRating = calculateTotalRating(ratingBar1, ratingBar2)
+                val reviewContent = etReview?.text?.toString()?.trim()
+
+                if (userRating == 0) {
+                    Toast.makeText(this, "Vui lòng chọn điểm đánh giá", Toast.LENGTH_SHORT).show()
+                    return@setOnClickListener
                 }
 
-                ratingBar2?.setOnRatingBarChangeListener { _, rating, fromUser ->
-                    if (fromUser && rating > 0) {
-                        ratingBar1?.rating = 5f
-                    }
-                }
+                val movieRef = database.child("Movies").child(movieId)
+                val pointTransactionRef = database.child("PointTransactions")
+                val customerRef = database.child("Customers").child(userId).child("point")
 
-                btnCancel?.setOnClickListener {
-                    dialog.dismiss()
-                }
-
-                btnRateNow?.setOnClickListener {
-                    val userRating = calculateTotalRating(ratingBar1, ratingBar2)
-                    if (userRating == 0) {
-                        return@setOnClickListener
-                    }
-
-                    // Reference to the movie's ratings
-                    val movieRef = database.child("Movies").child(movieId).child("ratings")
-
-                    // Update movie ratings and store user rating
-                    movieRef.runTransaction(object : Transaction.Handler {
+                // Update numeric rating
+                if (userRating > 0) {
+                    movieRef.child("ratings").runTransaction(object : Transaction.Handler {
                         override fun doTransaction(currentData: MutableData): Transaction.Result {
                             val totalScore = currentData.child("total_score").getValue(Int::class.java) ?: 0
                             val totalVotes = currentData.child("total_votes").getValue(Int::class.java) ?: 0
-
                             val newTotalScore = totalScore + userRating
                             val newTotalVotes = totalVotes + 1
                             val newAverageRating = newTotalScore.toFloat() / newTotalVotes
@@ -284,30 +319,91 @@ class NowPlayingDetailActivity : AppCompatActivity() {
 
                         override fun onComplete(error: DatabaseError?, committed: Boolean, currentData: DataSnapshot?) {
                             if (error != null) {
-                                Toast.makeText(this@NowPlayingDetailActivity, "Lỗi khi lưu đánh giá", Toast.LENGTH_SHORT).show()
-                            } else if (committed) {
-                                userRatingRef.setValue(userRating).addOnSuccessListener {
-                                    val newAverageRating = currentData?.child("average_rating")?.getValue(Float::class.java) ?: 0f
-                                    val movieQuantityVote = currentData?.child("total_votes")?.getValue(Int::class.java) ?: 0
-                                    binding.tvRating.text = String.format("%.1f", newAverageRating)
-                                    binding.ratingBar.rating = newAverageRating / 2
-                                    binding.tvReviewer.text = "($movieQuantityVote reviews)"
-                                    dialog.dismiss()
-                                    bottomSheetRateSuccess()
-                                    scheduleNotification(movieId, binding.tvTitle.text.toString())
-                                }.addOnFailureListener {
-                                    Toast.makeText(this@NowPlayingDetailActivity, "Lỗi khi lưu đánh giá", Toast.LENGTH_SHORT).show()
-                                }
+                                return
+                            }
+                            if (committed) {
+                                updateUI(currentData)
                             }
                         }
                     })
+
+                    userRatingRef.setValue(userRating).addOnFailureListener {
+                    }
                 }
+
+                // Save text rating if provided
+                if (!reviewContent.isNullOrEmpty()) {
+                    val ratingId = database.push().key ?: return@setOnClickListener
+                    val timestamp = System.currentTimeMillis()
+                    val textRating = mapOf(
+                        "rating_id" to ratingId,
+                        "customer_id" to userId,
+                        "timestamp" to timestamp,
+                        "content" to reviewContent,
+                        "likes" to 0,
+                        "dislikes" to 0
+                    )
+
+                    movieRef.child("text_ratings").child(ratingId).setValue(textRating)
+                        .addOnSuccessListener {
+                        }
+                        .addOnFailureListener {
+                        }
+                }
+
+                // Save points and transaction
+                val transactionId = "PT${System.currentTimeMillis()}"
+                val pointTransaction = mapOf(
+                    "amount" to 5000,
+                    "created_at" to System.currentTimeMillis(),
+                    "customer_id" to userId,
+                    "description" to "Points earned for rating a movie",
+                    "points" to 5000,
+                    "transaction_id" to transactionId,
+                    "type" to "earned"
+                )
+
+                customerRef.runTransaction(object : Transaction.Handler {
+                    override fun doTransaction(currentData: MutableData): Transaction.Result {
+                        val currentPoints = currentData.getValue(Int::class.java) ?: 0
+                        currentData.value = currentPoints + 5000
+                        return Transaction.success(currentData)
+                    }
+
+                    override fun onComplete(error: DatabaseError?, committed: Boolean, currentData: DataSnapshot?) {
+                        if (error != null) {
+                            Log.e("NowPlayingDetailActivity", "Failed to update points", error.toException())
+                            Toast.makeText(this@NowPlayingDetailActivity, "Lỗi khi cập nhật điểm: ${error.message}", Toast.LENGTH_SHORT).show()
+                        } else if (committed) {
+                            Log.d("NowPlayingDetailActivity", "Points updated successfully")
+                        }
+                    }
+                })
+
+                pointTransactionRef.child(transactionId).setValue(pointTransaction)
+                    .addOnSuccessListener {
+                        Log.d("NowPlayingDetailActivity", "Point transaction saved successfully")
+                    }
+                    .addOnFailureListener {
+                        Log.e("NowPlayingDetailActivity", "Failed to save point transaction", it)
+                        Toast.makeText(this, "Lỗi khi lưu giao dịch điểm: ${it.message}", Toast.LENGTH_SHORT).show()
+                    }
+
+                dialog.dismiss()
+                bottomSheetRateSuccess()
+                scheduleNotification(movieId, binding.tvTitle.text.toString())
             }
         }.addOnFailureListener {
-            Toast.makeText(this, "Lỗi khi kiểm tra đánh giá", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "Lỗi khi kiểm tra đánh giá: ${it.message}", Toast.LENGTH_SHORT).show()
         }
     }
-
+    private fun updateUI(currentData: DataSnapshot?) {
+        val newAverageRating = currentData?.child("average_rating")?.getValue(Float::class.java) ?: 0f
+        val movieQuantityVote = currentData?.child("total_votes")?.getValue(Int::class.java) ?: 0
+        binding.tvRating.text = String.format("%.1f", newAverageRating)
+        binding.ratingBar.rating = newAverageRating / 2
+        binding.tvReviewer.text = "($movieQuantityVote reviews)"
+    }
     private fun calculateTotalRating(ratingBar1: RatingBar?, ratingBar2: RatingBar?): Int {
         val rating1 = ratingBar1?.rating?.toInt() ?: 0
         val rating2 = ratingBar2?.rating?.toInt() ?: 0
@@ -415,6 +511,16 @@ class NowPlayingDetailActivity : AppCompatActivity() {
                 outRect.left = if (parent.getChildAdapterPosition(view) == 0) spacing else 0
             }
         })
+
+        binding.rcvRateText.setHasFixedSize(true)
+        binding.rcvRateText.layoutManager = LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
+        binding.rcvRateText.addItemDecoration(object : RecyclerView.ItemDecoration() {
+            override fun getItemOffsets(outRect: Rect, view: View, parent: RecyclerView, state: RecyclerView.State) {
+                val spacing = resources.getDimensionPixelSize(R.dimen.item_spacing)
+                outRect.bottom = spacing
+                outRect.top = if (parent.getChildAdapterPosition(view) == 0) spacing else 0
+            }
+        })
     }
 
     private fun scheduleNotification(movieId: String, movieTitle: String) {
@@ -430,7 +536,7 @@ class NowPlayingDetailActivity : AppCompatActivity() {
                 val token = task.result
                 val data = Data.Builder()
                     .putString("title", "Đánh Giá Thành Công!")
-                    .putString("message", "Cảm ơn bạn đã đánh giá $movieTitle! Bạn đã nhận được 100 điểm thưởng.")
+                    .putString("message", "Cảm ơn bạn đã đánh giá $movieTitle! Bạn đã nhận được 5000 điểm thưởng.")
                     .putString("token", token)
                     .putString("movie_id", movieId)
                     .putBoolean("isShowtime", false)

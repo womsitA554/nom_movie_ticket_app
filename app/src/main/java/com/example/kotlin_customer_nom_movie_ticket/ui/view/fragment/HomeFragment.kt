@@ -189,6 +189,7 @@ class HomeFragment : Fragment() {
                 intent.putExtra("rating", initialMovie.ratings.average_rating)
                 intent.putStringArrayListExtra("actor_ids", ArrayList(initialMovie.actor_ids))
                 startActivity(intent)
+                Log.d("movie_id", initialMovie.movie_id)
             }
 
             binding.viewPagerMovie.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {

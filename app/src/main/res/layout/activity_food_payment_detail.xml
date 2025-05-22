@@ -314,7 +314,6 @@
                             android:layout_weight="1"
                             android:layout_marginStart="4dp"
                             android:fontFamily="@font/urbanist_regular"
-                            android:text="(200)"
                             style="@style/TextColor"
                             android:textStyle="bold" />
 

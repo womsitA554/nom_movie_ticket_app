@@ -86,7 +86,7 @@ class PaymentDetailActivity : AppCompatActivity() {
     private var discountApplied = 0.0
     private var pointsToDeduct = 0
     private var listCart: MutableList<Cart> = mutableListOf()
-    private var roomName: String = "" // Added to store roomName
+    private var roomName: String = ""
 
     private lateinit var paymentSheet: PaymentSheet
     private var customerId: String? = null
@@ -282,16 +282,25 @@ class PaymentDetailActivity : AppCompatActivity() {
                     if (clientSecretKey != null) {
                         paymentFlow()
                     } else {
-                        Toast.makeText(this, "Thanh toán chưa sẵn sàng, vui lòng đợi", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(
+                            this,
+                            "Thanh toán chưa sẵn sàng, vui lòng đợi",
+                            Toast.LENGTH_SHORT
+                        ).show()
                     }
                 } else {
-                    Toast.makeText(this, "Vui lòng chọn thời gian nhận đồ", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, "Vui lòng chọn thời gian nhận đồ", Toast.LENGTH_SHORT)
+                        .show()
                 }
             } else {
                 if (clientSecretKey != null) {
                     paymentFlow()
                 } else {
-                    Toast.makeText(this, "Thanh toán chưa sẵn sàng, vui lòng đợi", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(
+                        this,
+                        "Thanh toán chưa sẵn sàng, vui lòng đợi",
+                        Toast.LENGTH_SHORT
+                    ).show()
                 }
             }
         }
@@ -319,7 +328,6 @@ class PaymentDetailActivity : AppCompatActivity() {
             }
         }
 
-        // Initially hide linearLayoutPoint
         binding.linearLayoutPoint.visibility = View.GONE
     }
 
@@ -352,72 +360,69 @@ class PaymentDetailActivity : AppCompatActivity() {
         val tvAvailablePoints = dialog.findViewById<TextView>(R.id.tvAvailablePoints)
         val tvMaxPointUse = dialog.findViewById<TextView>(R.id.tvMaxPointUse)
 
-        // Fetch available points and calculate max usable points
         lifecycleScope.launch {
             val userId = SessionManager.getUserId(this@PaymentDetailActivity).toString()
             val availablePoints = withContext(Dispatchers.IO) {
                 viewModel.getCustomerPoints(userId)
             }
-            // Max points = min(available points, 10% of totalPrice * 100)
-            val maxDiscount = totalPrice * 0.03 // Max discount in dollars
-            val maxPoints = (maxDiscount * 100).toInt() // 1 point = $0.03
+            val maxDiscount = totalPrice * 0.07
+            val maxPoints = (maxDiscount * 1).toInt()
             val maxUsablePoints = min(availablePoints, maxPoints)
 
             tvAvailablePoints?.text = availablePoints.toString()
             tvMaxPointUse?.text = maxUsablePoints.toString()
-        }
 
-        btnApply?.setOnClickListener {
-            val inputPoints = etPoints?.text.toString().toIntOrNull() ?: 0
-            if (inputPoints <= 0) {
-                Toast.makeText(this, "Vui lòng nhập số điểm hợp lệ", Toast.LENGTH_SHORT).show()
-                return@setOnClickListener
-            }
-
-            lifecycleScope.launch {
-                val userId = SessionManager.getUserId(this@PaymentDetailActivity).toString()
-                val availablePoints = withContext(Dispatchers.IO) {
-                    viewModel.getCustomerPoints(userId)
-                }
-                // Calculate max usable points again for validation
-                val maxDiscount = totalPrice * 0.03
-                val maxPoints = (maxDiscount * 100).toInt()
-                val maxUsablePoints = min(availablePoints, maxPoints)
-
-                if (inputPoints > maxUsablePoints) {
-                    Toast.makeText(
-                        this@PaymentDetailActivity,
-                        "Không thể sử dụng nhiều hơn $maxUsablePoints điểm cho đơn hàng này",
-                        Toast.LENGTH_SHORT
-                    ).show()
-                    return@launch
+            btnApply?.setOnClickListener {
+                val inputPoints = etPoints?.text.toString().toIntOrNull() ?: 0
+                if (inputPoints <= 0 || inputPoints > maxPoints) {
+                    Toast.makeText(applicationContext, "Vui lòng nhập số điểm hợp lệ", Toast.LENGTH_SHORT).show()
+                    return@setOnClickListener
                 }
 
-                if (inputPoints > availablePoints) {
-                    Toast.makeText(this@PaymentDetailActivity, "Không đủ điểm", Toast.LENGTH_SHORT).show()
-                    return@launch
+                lifecycleScope.launch {
+                    val userId = SessionManager.getUserId(this@PaymentDetailActivity).toString()
+                    val availablePoints = withContext(Dispatchers.IO) {
+                        viewModel.getCustomerPoints(userId)
+                    }
+                    val maxDiscount = totalPrice * 0.07
+                    val maxPoints = (maxDiscount * 100).toInt()
+                    val maxUsablePoints = min(availablePoints, maxPoints)
+
+                    if (inputPoints > maxUsablePoints) {
+                        Toast.makeText(
+                            this@PaymentDetailActivity,
+                            "Không thể sử dụng nhiều hơn $maxUsablePoints điểm cho đơn hàng này",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                        return@launch
+                    }
+
+                    if (inputPoints > availablePoints) {
+                        Toast.makeText(
+                            this@PaymentDetailActivity,
+                            "Không đủ điểm",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                        return@launch
+                    }
+
+                    pointsToDeduct = inputPoints
+                    discountApplied = inputPoints * 1.0
+                    actualPay = totalPrice + fee - discountApplied
+
+                    binding.linearLayoutPoint.visibility = View.VISIBLE
+                    binding.tvPointUse.text = "($inputPoints)"
+                    val formatter = NumberFormat.getNumberInstance(Locale("vi", "VN"))
+                    val pointPrice = discountApplied
+                    binding.tvPointToPrice.text = "-" + formatter.format(pointPrice) + "đ"
+                    updateUi(totalPriceSeats, totalPriceFood)
+
+                    dialog.dismiss()
                 }
-
-                // Store points to deduct and apply discount
-                pointsToDeduct = inputPoints
-                discountApplied = inputPoints * 0.5
-                actualPay = totalPrice + fee - discountApplied
-
-                // Update UI to show points used and discount
-                binding.linearLayoutPoint.visibility = View.VISIBLE
-                binding.tvPointUse.text = "($inputPoints)"
-                val formatter = NumberFormat.getNumberInstance(Locale("vi", "VN"))
-                val pointPrice = discountApplied
-                binding.tvPointToPrice.text = "-" + formatter.format(pointPrice) + "đ"
-                updateUi(totalPriceSeats, totalPriceFood)
-
-                dialog.dismiss()
-                Toast.makeText(this@PaymentDetailActivity, "Discount applied: $${String.format("%.2f", discountApplied)}", Toast.LENGTH_SHORT).show()
             }
         }
 
         btnCancel?.setOnClickListener {
-            // Reset points and discount if canceled
             pointsToDeduct = 0
             discountApplied = 0.0
             actualPay = totalPrice + fee
@@ -428,7 +433,8 @@ class PaymentDetailActivity : AppCompatActivity() {
     }
 
     private fun updateUi(totalPriceSeats: Double, totalPriceFood: Double) {
-        val formatter = NumberFormat.getNumberInstance(Locale("vi", "VN"))// VND không cần phần thập phân
+        val formatter =
+            NumberFormat.getNumberInstance(Locale("vi", "VN"))
         formatter.maximumFractionDigits = 0
 
         val fees = (totalPriceSeats + totalPriceFood) * 0.03
@@ -437,7 +443,11 @@ class PaymentDetailActivity : AppCompatActivity() {
 
         if (actualPay < 0) {
             Log.e("PaymentDetailActivity", "Invalid actualPay: $actualPay")
-            Toast.makeText(this, "Số tiền thanh toán không hợp lệ. Vui lòng kiểm tra đơn hàng của bạn.", Toast.LENGTH_LONG).show()
+            Toast.makeText(
+                this,
+                "Số tiền thanh toán không hợp lệ. Vui lòng kiểm tra đơn hàng của bạn.",
+                Toast.LENGTH_LONG
+            ).show()
             binding.btnContinue.isEnabled = false
             return
         }
@@ -716,6 +726,7 @@ class PaymentDetailActivity : AppCompatActivity() {
                     totalPriceSeats = totalPriceSeats,
                     totalPriceFood = totalPriceFood,
                     fee = fee,
+                    discount = discountApplied,
                     actualPay = actualPay,
                     cartManager = cartManager,
                     pickUpTime = pickUpTime
@@ -862,7 +873,7 @@ class PaymentDetailActivity : AppCompatActivity() {
             Log.d("PickUpNow", "Picked up now")
             dialog.dismiss()
 
-            val calendar  = Calendar.getInstance(TimeZone.getTimeZone("Asia/Ho_Chi_Minh"))
+            val calendar = Calendar.getInstance(TimeZone.getTimeZone("Asia/Ho_Chi_Minh"))
             calendar.add(Calendar.MINUTE, 10)
             val currentTime =
                 SimpleDateFormat("HH:mm", Locale("vi", "VN")).format(calendar.time)
@@ -896,7 +907,8 @@ class PaymentDetailActivity : AppCompatActivity() {
         dialog.setContentView(R.layout.bottom_sheet_set_pick_up_time)
         dialog.show()
 
-        val bottomSheet = dialog.findViewById<View>(com.google.android.material.R.id.design_bottom_sheet)
+        val bottomSheet =
+            dialog.findViewById<View>(com.google.android.material.R.id.design_bottom_sheet)
         bottomSheet?.let {
             val behavior = BottomSheetBehavior.from(it)
             behavior.state = BottomSheetBehavior.STATE_EXPANDED
@@ -937,11 +949,12 @@ class PaymentDetailActivity : AppCompatActivity() {
         if (isToday(calendar) && hourPicker?.value == minHour) {
             minutePicker?.minValue = minMinute
         }
-        minutePicker?.value = if (isToday(calendar) && hourPicker?.value == minHour && minutePicker?.value ?: 0 < minMinute) {
-            minMinute
-        } else {
-            minutePicker?.value ?: 30
-        }
+        minutePicker?.value =
+            if (isToday(calendar) && hourPicker?.value == minHour && minutePicker?.value ?: 0 < minMinute) {
+                minMinute
+            } else {
+                minutePicker?.value ?: 30
+            }
         minutePicker?.setFormatter { value -> String.format("%02d", value) }
 
         hourPicker?.let { removeSelectionDivider(it) }
@@ -1006,7 +1019,13 @@ class PaymentDetailActivity : AppCompatActivity() {
             if (isToday(calendar) && selectedCalendar.before(currentCalendar)) {
                 Toast.makeText(
                     this,
-                    "Thời gian không hợp lệ, phải sau ${String.format("%02d:%02d", minHour, minMinute)} hôm nay",
+                    "Thời gian không hợp lệ, phải sau ${
+                        String.format(
+                            "%02d:%02d",
+                            minHour,
+                            minMinute
+                        )
+                    } hôm nay",
                     Toast.LENGTH_SHORT
                 ).show()
                 return@setOnClickListener

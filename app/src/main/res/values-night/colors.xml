@@ -21,5 +21,7 @@
     <color name="text_dialogColor">#FFFFFFFF</color>
     <color name="bg_dialogColor">#1E1E1E</color>
 
+    <color name="dim_background">#80272727</color>
+
     <color name="bottom_sheet_background">#0B0A0A</color>
 </resources>

@@ -6,8 +6,14 @@ import com.example.kotlin_customer_nom_movie_ticket.data.model.FoodBooking
 import com.example.kotlin_customer_nom_movie_ticket.data.model.PointTransaction
 import com.example.kotlin_customer_nom_movie_ticket.util.CartManager
 import com.example.kotlin_customer_nom_movie_ticket.viewmodel.SeatViewModel
+import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.FirebaseDatabase
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.tasks.await
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 class TicketRepository @Inject constructor() {
@@ -16,107 +22,135 @@ class TicketRepository @Inject constructor() {
     private val dbFoodBooking = FirebaseDatabase.getInstance().getReference("FoodBookings")
     private val seatViewModel = SeatViewModel()
 
-    suspend fun getBookingsByCustomerId(customerId: String): List<Booking> {
-        val bookings = mutableListOf<Booking>()
-        val billsSnapshot = db.child("Bills")
-            .orderByChild("customer_id")
-            .equalTo(customerId)
-            .get()
-            .await()
-
-        for (bill in billsSnapshot.children) {
-            val billId = bill.child("bill_id").getValue(String::class.java) ?: continue
-            val paymentStatus =
-                bill.child("payment_status").getValue(String::class.java) ?: continue
-            val paymentMethod = bill.child("payment_method").getValue(String::class.java)
-            val seatPrice = bill.child("seat_price").getValue(Double::class.java) ?: 0.0
-            val foodPrice = bill.child("food_price").getValue(Double::class.java) ?: 0.0
-            val fee = bill.child("fee_price").getValue(Double::class.java) ?: 0.0
-            val totalPrice = bill.child("total_amount").getValue(Double::class.java) ?: 0.0
-
-            if (paymentStatus != "Paid") continue
-
-            val billDetailsSnapshot = db.child("BillDetails")
-                .orderByChild("bill_id")
-                .equalTo(billId)
+    suspend fun getBookingsByCustomerId(customerId: String): Result<List<Booking>> = withContext(Dispatchers.IO) {
+        try {
+            val billsSnapshot = db.child("Bills")
+                .orderByChild("customer_id")
+                .equalTo(customerId)
                 .get()
                 .await()
 
-            val ticketIds = billDetailsSnapshot.children.mapNotNull { detail ->
-                detail.child("ticket_id").getValue(String::class.java)
-            }
-            if (ticketIds.isEmpty()) continue
-
-            val firstTicketId = ticketIds.first()
-            val ticketSnapshot = db.child("Tickets").child(firstTicketId).get().await()
-            val cinemaId =
-                ticketSnapshot.child("cinema_id").getValue(String::class.java) ?: continue
-            val showtimeId =
-                ticketSnapshot.child("showtime_id").getValue(String::class.java) ?: continue
-            val pricePerSeat = ticketSnapshot.child("price").getValue(Double::class.java) ?: 0.0
-            val seatIds = ticketIds.mapNotNull { ticketId ->
-                db.child("Tickets").child(ticketId).child("seat_id").get().await()
-                    .getValue(String::class.java)
+            val bookings = coroutineScope {
+                billsSnapshot.children.mapNotNull { billSnapshot ->
+                    async {
+                        try {
+                            buildBookingFromBillSnapshot(billSnapshot)
+                        } catch (e: Exception) {
+                            Log.e("TicketRepository", "Error processing bill: ${billSnapshot.key}", e)
+                            null
+                        }
+                    }
+                }.awaitAll().filterNotNull()
             }
 
-            val seatNames = seatIds.mapNotNull { seatId ->
-                val seatSnapshot = db.child("Seats").child(seatId).get().await()
-                val seatRow = seatSnapshot.child("row_number").getValue(String::class.java)
-                val seatNumber = seatSnapshot.child("seat_number").getValue(String::class.java)
-                if (seatRow != null && seatNumber != null) "$seatRow$seatNumber" else null
-            }
-
-            val cinemaSnapshot = db.child("Cinemas").child(cinemaId).get().await()
-            val cinemaName =
-                cinemaSnapshot.child("cinema_name").getValue(String::class.java) ?: "Unknown"
-
-            val showtimeSnapshot = db.child("Showtimes").child(showtimeId).get().await()
-            val movieId =
-                showtimeSnapshot.child("movie_id").getValue(String::class.java) ?: continue
-            val showtimeTime = showtimeSnapshot.child("showtime_time").getValue(String::class.java)
-            val roomId = showtimeSnapshot.child("room_id").getValue(String::class.java)
-
-            val movieSnapshot = db.child("Movies").child(movieId).get().await()
-            val movieTitle = movieSnapshot.child("title").getValue(String::class.java) ?: "Unknown"
-            val movieDuration = movieSnapshot.child("duration").getValue(Int::class.java) ?: 0
-            val movieAgeRating =
-                movieSnapshot.child("age_rating").getValue(String::class.java) ?: "N/A"
-            val posterUrl = movieSnapshot.child("poster_url").getValue(String::class.java) ?: ""
-            val director = movieSnapshot.child("director_id").getValue(String::class.java)
-
-            val directorSnapshot = db.child("Directors").child(director!!).get().await()
-            val directorName = directorSnapshot.child("name").getValue(String::class.java)
-
-            val genre = movieSnapshot.child("genre").getValue(String::class.java)
-
-            val roomSnapshot = roomId?.let { db.child("Rooms").child(it).get().await() }
-            val roomName =
-                roomSnapshot?.child("room_name")?.getValue(String::class.java) ?: "Unknown"
-
-            val booking = Booking(
-                bill_id = billId,
-                movie_id = movieId,
-                title = movieTitle,
-                age_rating = movieAgeRating,
-                cinema_name = cinemaName,
-                showtime_time = showtimeTime,
-                seat_ids = seatNames,
-                duration = movieDuration,
-                poster_url = posterUrl,
-                director = directorName,
-                genre = genre,
-                room_name = roomName,
-                seat_price = seatPrice,
-                food_price = foodPrice,
-                convenience_fee = fee,
-                total_price = totalPrice,
-                payment_method = paymentMethod,
-                payment_status = paymentStatus
-            )
-            bookings.add(booking)
+            Result.success(bookings)
+        } catch (e: Exception) {
+            Log.e("TicketRepository", "Error fetching bookings for customerId: $customerId", e)
+            Result.failure(e)
         }
+    }
 
-        return bookings
+    private suspend fun buildBookingFromBillSnapshot(billSnapshot: DataSnapshot): Booking? = coroutineScope {
+        val billId = billSnapshot.child("bill_id").getValue(String::class.java) ?: return@coroutineScope null
+        val paymentStatus = billSnapshot.child("payment_status").getValue(String::class.java) ?: return@coroutineScope null
+        if (paymentStatus != "Paid") return@coroutineScope null
+
+        val paymentMethod = billSnapshot.child("payment_method").getValue(String::class.java)
+        val seatPrice = billSnapshot.child("seat_price").getValue(Double::class.java) ?: 0.0
+        val foodPrice = billSnapshot.child("food_price").getValue(Double::class.java) ?: 0.0
+        val fee = billSnapshot.child("fee_price").getValue(Double::class.java) ?: 0.0
+        val discount = billSnapshot.child("discount").getValue(Double::class.java) ?: 0.0
+        val totalPrice = billSnapshot.child("total_amount").getValue(Double::class.java) ?: 0.0
+
+        val billDetailsSnapshot = db.child("BillDetails")
+            .orderByChild("bill_id")
+            .equalTo(billId)
+            .get()
+            .await()
+
+        val ticketIds = billDetailsSnapshot.children.mapNotNull { detail ->
+            detail.child("ticket_id").getValue(String::class.java)
+        }
+        if (ticketIds.isEmpty()) return@coroutineScope null
+
+        val firstTicketId = ticketIds.first()
+        val ticketDeferred = async { db.child("Tickets").child(firstTicketId).get().await() }
+        val seatsDeferred = async { fetchSeatNames(ticketIds) }
+
+        val ticketSnapshot = ticketDeferred.await()
+        val cinemaId = ticketSnapshot.child("cinema_id").getValue(String::class.java) ?: return@coroutineScope null
+        val showtimeId = ticketSnapshot.child("showtime_id").getValue(String::class.java) ?: return@coroutineScope null
+
+        val cinemaDeferred = async { db.child("Cinemas").child(cinemaId).get().await() }
+        val showtimeDeferred = async { db.child("Showtimes").child(showtimeId).get().await() }
+
+        val cinemaSnapshot = cinemaDeferred.await()
+        val showtimeSnapshot = showtimeDeferred.await()
+
+        val cinemaName = cinemaSnapshot.child("cinema_name").getValue(String::class.java) ?: "Unknown"
+        val movieId = showtimeSnapshot.child("movie_id").getValue(String::class.java) ?: return@coroutineScope null
+        val showtimeTime = showtimeSnapshot.child("showtime_time").getValue(String::class.java)
+        val roomId = showtimeSnapshot.child("room_id").getValue(String::class.java)
+
+        val movieDeferred = async { db.child("Movies").child(movieId).get().await() }
+        val roomDeferred = async { roomId?.let { db.child("Rooms").child(it).get().await() } }
+
+        val movieSnapshot = movieDeferred.await()
+        val roomSnapshot = roomDeferred.await()
+
+        val movieTitle = movieSnapshot.child("title").getValue(String::class.java) ?: "Unknown"
+        val movieDuration = movieSnapshot.child("duration").getValue(Int::class.java) ?: 0
+        val movieAgeRating = movieSnapshot.child("age_rating").getValue(String::class.java) ?: "N/A"
+        val posterUrl = movieSnapshot.child("poster_url").getValue(String::class.java) ?: ""
+        val directorId = movieSnapshot.child("director_id").getValue(String::class.java)
+        val genre = movieSnapshot.child("genre").getValue(String::class.java)
+        val roomName = roomSnapshot?.child("room_name")?.getValue(String::class.java) ?: "Unknown"
+
+        val directorDeferred = async { directorId?.let { db.child("Directors").child(it).get().await() } }
+        val directorSnapshot = directorDeferred.await()
+        val directorName = directorSnapshot?.child("name")?.getValue(String::class.java) ?: "Unknown"
+
+        val seatNames = seatsDeferred.await()
+
+        return@coroutineScope Booking(
+            bill_id = billId,
+            movie_id = movieId,
+            title = movieTitle,
+            age_rating = movieAgeRating,
+            cinema_name = cinemaName,
+            showtime_time = showtimeTime,
+            seat_ids = seatNames,
+            duration = movieDuration,
+            poster_url = posterUrl,
+            director = directorName,
+            genre = genre,
+            room_name = roomName,
+            seat_price = seatPrice,
+            food_price = foodPrice,
+            convenience_fee = fee,
+            discount = discount,
+            total_price = totalPrice,
+            payment_method = paymentMethod,
+            payment_status = paymentStatus
+        )
+    }
+
+    private suspend fun fetchSeatNames(ticketIds: List<String>): List<String> = coroutineScope {
+        ticketIds.mapNotNull { ticketId ->
+            async {
+                try {
+                    val ticketSnapshot = db.child("Tickets").child(ticketId).get().await()
+                    val seatId = ticketSnapshot.child("seat_id").getValue(String::class.java) ?: return@async null
+                    val seatSnapshot = db.child("Seats").child(seatId).get().await()
+                    val seatRow = seatSnapshot.child("row_number").getValue(String::class.java)
+                    val seatNumber = seatSnapshot.child("seat_number").getValue(String::class.java)
+                    if (seatRow != null && seatNumber != null) "$seatRow$seatNumber" else null
+                } catch (e: Exception) {
+                    Log.e("TicketRepository", "Error fetching seat for ticketId: $ticketId", e)
+                    null
+                }
+            }
+        }.awaitAll().filterNotNull()
     }
 
     suspend fun getFoodBookingByCustomerId(userId: String): List<FoodBooking> {
@@ -152,6 +186,7 @@ class TicketRepository @Inject constructor() {
         totalPriceSeats: Double,
         totalPriceFood: Double,
         fee: Double,
+        discount: Double,
         actualPay: Double,
         cartManager: CartManager,
         pickUpTime: String
@@ -175,9 +210,10 @@ class TicketRepository @Inject constructor() {
                 "seat_price" to totalPriceSeats,
                 "food_price" to totalPriceFood,
                 "fee_price" to fee,
+                "discount" to discount,
                 "total_amount" to actualPay,
                 "payment_method" to "Visa",
-                "payment_status" to "Paid",
+                "payment_status" to "Đã thanh toán",
                 "created_at" to createdAt,
                 "promotion_id" to null
             )
@@ -223,7 +259,7 @@ class TicketRepository @Inject constructor() {
                     "food_items" to cartItems.map { it.toMap() },
                     "total_price" to totalPriceFood,
                     "payment_method" to "Visa",
-                    "payment_status" to "Paid",
+                    "payment_status" to "Đã thanh toán",
                     "order_time" to createdAt,
                     "pick_up_time" to pickUpTime
                 )
@@ -241,10 +277,8 @@ class TicketRepository @Inject constructor() {
 
     suspend fun addPointsForPayment(customerId: String, billId: String, totalAmount: Double) {
         try {
-            // Calculate points: 1$ = 10 points
-            val pointsEarned = (totalAmount * 10).toInt()
+            val pointsEarned = (totalAmount * 0.05).toInt()
 
-            // Create a point transaction
             val transactionId = "PT${System.currentTimeMillis()}"
             val pointTransaction = hashMapOf(
                 "transaction_id" to transactionId,
@@ -256,11 +290,9 @@ class TicketRepository @Inject constructor() {
                 "created_at" to System.currentTimeMillis()
             )
 
-            // Save point transaction
             db.child("PointTransactions")
                 .child(transactionId).setValue(pointTransaction).await()
 
-            // Update customer's total points
             val customerRef = db.child("Customers").child(customerId)
             val customerSnapshot = customerRef.get().await()
             val currentPoints = customerSnapshot.child("point").getValue(Int::class.java) ?: 0

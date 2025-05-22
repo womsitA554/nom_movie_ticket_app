@@ -118,9 +118,12 @@ class UpcomingTicketFragment : Fragment() {
                 requireActivity().overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left)
             }
             onClickReminder = { booking, position, isChecked ->
+                val prefs = requireContext().getSharedPreferences("reminder_prefs", Context.MODE_PRIVATE)
+                prefs.edit().putBoolean("reminder_${booking.bill_id}", isChecked).apply()
+
                 if (isChecked) {
-                    val prefs = requireContext().getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
-                    if (prefs.getBoolean("notifications_enabled", true)) {
+                    val appPrefs = requireContext().getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
+                    if (appPrefs.getBoolean("notifications_enabled", true)) {
                         scheduleNotification(booking)
                     } else {
                         showOpenProfileDialog(booking, position)
@@ -144,6 +147,10 @@ class UpcomingTicketFragment : Fragment() {
 
     private fun setupObservers() {
         ticketViewModel.upcomingBookings.observe(viewLifecycleOwner) { bookings ->
+            val prefs = requireContext().getSharedPreferences("reminder_prefs", Context.MODE_PRIVATE)
+            bookings.forEach { booking ->
+                booking.isReminderEnabled = prefs.getBoolean("reminder_${booking.bill_id}", false)
+            }
             adapter.updateData(bookings.toMutableList())
             isFetchingBookings = false
             if (!isFetchingBookings && !isFetchingFoodBookings) {

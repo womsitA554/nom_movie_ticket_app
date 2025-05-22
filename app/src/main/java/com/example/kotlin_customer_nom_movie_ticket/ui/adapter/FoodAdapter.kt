@@ -1,12 +1,11 @@
 package com.example.kotlin_customer_nom_movie_ticket.ui.adapter
 
+import Food
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.kotlin_customer_nom_movie_ticket.R
-import com.example.kotlin_customer_nom_movie_ticket.data.model.Food
-import com.example.kotlin_customer_nom_movie_ticket.data.model.Movie
 import com.example.kotlin_customer_nom_movie_ticket.databinding.FoodItemBinding
 import java.text.NumberFormat
 import java.util.Locale
@@ -17,7 +16,7 @@ class FoodAdapter (private val listFood: List<Food>, private val isGrid: Boolean
     inner class FoodViewHolder(private val binding: FoodItemBinding) : RecyclerView.ViewHolder(binding.root) {
         init {
             binding.root.setOnClickListener {
-                onClickItem.invoke(listFood[adapterPosition], position)
+                onClickItem.invoke(listFood[adapterPosition], adapterPosition)
             }
         }
         fun onBind(food: Food){

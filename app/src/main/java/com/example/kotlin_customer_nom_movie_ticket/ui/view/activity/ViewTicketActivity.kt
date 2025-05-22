@@ -39,7 +39,7 @@ class ViewTicketActivity : AppCompatActivity() {
     private lateinit var binding: ActivityViewTicketBinding
     private val ticketViewModel: TicketViewModel by viewModels()
     private val STORAGE_PERMISSION_CODE = 100
-    private val CORNER_RADIUS = 40f // Adjust to match your @style/pic_item_top corner radius
+    private val CORNER_RADIUS = 40f
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
