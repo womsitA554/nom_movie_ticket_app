@@ -58,7 +58,7 @@ class OrderFoodDetailActivity : AppCompatActivity() {
         binding.tvFee.text =  formatter.format(fee) + "đ"
         if (discount > 0) {
             binding.lnDiscount.visibility = android.view.View.VISIBLE
-            binding.tvDiscount.text = formatter.format(discount) + "đ"
+            binding.tvDiscount.text = "-" + formatter.format(discount) + "đ"
         } else {
             binding.lnDiscount.visibility = android.view.View.GONE
         }

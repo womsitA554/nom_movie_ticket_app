@@ -53,7 +53,7 @@ class BookingDetailActivity : AppCompatActivity() {
         }
         if (booking.discount > 0) {
             binding.lnDiscount.visibility = android.view.View.VISIBLE
-            binding.tvDiscount.text = formatter.format(booking.discount) + "đ"
+            binding.tvDiscount.text = "-" + formatter.format(booking.discount) + "đ"
         } else {
             binding.lnDiscount.visibility = android.view.View.GONE
         }

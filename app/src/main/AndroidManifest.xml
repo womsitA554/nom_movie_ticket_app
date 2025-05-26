@@ -7,6 +7,7 @@
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <uses-permission
         android:name="android.permission.WRITE_EXTERNAL_STORAGE"
         android:maxSdkVersion="32" />
@@ -22,6 +23,26 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Kotlin_customer_nom_movie_ticket"
         tools:targetApi="31">
+        <activity
+            android:name=".ui.view.activity.VNPayReturnActivity"
+            android:exported="true"
+            android:launchMode="singleTask"
+            android:taskAffinity=""
+            android:excludeFromRecents="true"
+            android:theme="@android:style/Theme.NoDisplay">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="vnpay" android:host="ticket" android:path="/return" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="vnpay" android:host="food" android:path="/return" />
+            </intent-filter>
+        </activity>
         <activity
             android:name=".ui.view.activity.NotificationActivity"
             android:exported="false" />
@@ -42,7 +63,7 @@
             android:exported="false" />
         <activity
             android:name=".ui.view.activity.FoodPaymentDetailActivity"
-            android:exported="false" />
+            android:exported="false"/>
 
         <meta-data
             android:name="com.google.firebase.messaging.default_notification_icon"

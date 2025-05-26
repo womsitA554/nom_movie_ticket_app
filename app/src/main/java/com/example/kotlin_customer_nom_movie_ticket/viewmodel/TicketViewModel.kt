@@ -134,7 +134,7 @@ class TicketViewModel : ViewModel() {
             }
         }
 
-    fun saveFoodBooking(billId: String?, cartManager: CartManager, userId: String, totalPriceToPay: Double, fee: Double, discount: Double, pickUpTime: String) {
+    fun saveFoodBooking(billId: String?, cartManager: CartManager, userId: String, totalPriceToPay: Double, fee: Double, discount: Double, pickUpTime: String, paymentMethod: String) {
         viewModelScope.launch {
             val cartItems = cartManager.getCart(userId)
             if (cartItems.isEmpty()) {
@@ -153,8 +153,8 @@ class TicketViewModel : ViewModel() {
                 "fee" to fee,
                 "total_price_to_pay" to totalPriceToPay + fee - discount,
                 "discount" to discount,
-                "payment_method" to "Stripe",
-                "payment_status" to "Paid",
+                "payment_method" to paymentMethod,
+                "payment_status" to "Đã thanh toán",
                 "order_time" to createdAt,
                 "pick_up_time" to pickUpTime
             )
@@ -181,7 +181,8 @@ class TicketViewModel : ViewModel() {
         discount: Double,
         actualPay: Double,
         cartManager: CartManager,
-        pickUpTime: String
+        pickUpTime: String,
+        paymentMethod: String
     ) {
         viewModelScope.launch {
             _isLoading.value = true
@@ -199,7 +200,8 @@ class TicketViewModel : ViewModel() {
                     discount,
                     actualPay,
                     cartManager,
-                    pickUpTime
+                    pickUpTime,
+                    paymentMethod
                 )
                 if (billId != null) {
                     _paymentStatus.value = "Payment saved successfully for bill $billId"

@@ -53,7 +53,7 @@ class TicketRepository @Inject constructor() {
     private suspend fun buildBookingFromBillSnapshot(billSnapshot: DataSnapshot): Booking? = coroutineScope {
         val billId = billSnapshot.child("bill_id").getValue(String::class.java) ?: return@coroutineScope null
         val paymentStatus = billSnapshot.child("payment_status").getValue(String::class.java) ?: return@coroutineScope null
-        if (paymentStatus != "Paid") return@coroutineScope null
+        if (paymentStatus != "Đã thanh toán") return@coroutineScope null
 
         val paymentMethod = billSnapshot.child("payment_method").getValue(String::class.java)
         val seatPrice = billSnapshot.child("seat_price").getValue(Double::class.java) ?: 0.0
@@ -175,7 +175,6 @@ class TicketRepository @Inject constructor() {
         val customerId = foodBookingData["customer_id"] as? String ?: return
         val totalPrice = foodBookingData["total_price"] as? Double ?: return
         addPointsForPayment(customerId, foodBillId, totalPrice)
-        Log.d("SaveFoodBooking", "FoodBooking $foodBillId saved successfully")
     }
 
     suspend fun savePaymentData(
@@ -189,7 +188,8 @@ class TicketRepository @Inject constructor() {
         discount: Double,
         actualPay: Double,
         cartManager: CartManager,
-        pickUpTime: String
+        pickUpTime: String,
+        paymentMethod: String
     ): String? {
         return try {
             val pricePerSeat = 12.0
@@ -197,11 +197,11 @@ class TicketRepository @Inject constructor() {
             val billId = "B${createdAt}"
 
             ticketIds.forEach { ticketId ->
-                val ticketUpdate = hashMapOf<String, Any>("payment_status" to "Paid")
+                val ticketUpdate = hashMapOf<String, Any>("payment_status" to "Đã thanh toán")
                 db.child("Tickets").child(ticketId)
                     .updateChildren(ticketUpdate)
                     .await()
-                Log.d("UpdateTicket", "Ticket $ticketId updated to Paid")
+                Log.d("UpdateTicket", "Ticket $ticketId updated to Đã thanh toán")
             }
 
             val billData = hashMapOf(
@@ -212,7 +212,7 @@ class TicketRepository @Inject constructor() {
                 "fee_price" to fee,
                 "discount" to discount,
                 "total_amount" to actualPay,
-                "payment_method" to "Visa",
+                "payment_method" to paymentMethod,
                 "payment_status" to "Đã thanh toán",
                 "created_at" to createdAt,
                 "promotion_id" to null
@@ -250,6 +250,7 @@ class TicketRepository @Inject constructor() {
             }
 
             val cartItems = cartManager.getCart(userId)
+            val feeOfFood = totalPriceFood * 0.03
             if (cartItems.isNotEmpty()) {
                 val foodBillId = "FB${createdAt}"
                 val foodBookingData: HashMap<String, Any?> = hashMapOf(
@@ -258,7 +259,10 @@ class TicketRepository @Inject constructor() {
                     "customer_id" to userId,
                     "food_items" to cartItems.map { it.toMap() },
                     "total_price" to totalPriceFood,
-                    "payment_method" to "Visa",
+                    "fee" to feeOfFood,
+                    "total_price_to_pay" to totalPriceFood + feeOfFood,
+                    "discount" to 0,
+                    "payment_method" to paymentMethod,
                     "payment_status" to "Đã thanh toán",
                     "order_time" to createdAt,
                     "pick_up_time" to pickUpTime

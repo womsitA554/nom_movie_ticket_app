@@ -3,11 +3,14 @@ package com.example.kotlin_customer_nom_movie_ticket.ui.view.activity
 import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Dialog
+import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
+import android.net.Uri
+import android.net.wifi.WifiManager
 import android.os.Build
 import android.os.Bundle
 import android.os.CountDownTimer
@@ -35,6 +38,8 @@ import com.example.kotlin_customer_nom_movie_ticket.data.model.Room // Added imp
 import com.example.kotlin_customer_nom_movie_ticket.databinding.ActivityPaymentDetailBinding
 import com.example.kotlin_customer_nom_movie_ticket.service.stripe.ApiUtilities
 import com.example.kotlin_customer_nom_movie_ticket.service.stripe.Utils
+import com.example.kotlin_customer_nom_movie_ticket.service.vnpay.VNPayConfig
+import com.example.kotlin_customer_nom_movie_ticket.service.vnpay.VNPayUtils
 import com.example.kotlin_customer_nom_movie_ticket.ui.adapter.FoodOrderAdapter
 import com.example.kotlin_customer_nom_movie_ticket.util.CartManager
 import com.example.kotlin_customer_nom_movie_ticket.util.SessionManager
@@ -67,6 +72,7 @@ import java.util.Calendar
 import java.util.Locale
 import java.util.TimeZone
 import kotlin.math.min
+import java.util.UUID
 
 class PaymentDetailActivity : AppCompatActivity() {
     private lateinit var binding: ActivityPaymentDetailBinding
@@ -277,30 +283,26 @@ class PaymentDetailActivity : AppCompatActivity() {
         }
 
         binding.btnContinue.setOnClickListener {
-            if (listCart.isNotEmpty()) {
-                if (pickUpTime.isNotEmpty()) {
-                    if (clientSecretKey != null) {
-                        paymentFlow()
-                    } else {
-                        Toast.makeText(
-                            this,
-                            "Thanh toán chưa sẵn sàng, vui lòng đợi",
-                            Toast.LENGTH_SHORT
-                        ).show()
-                    }
-                } else {
-                    Toast.makeText(this, "Vui lòng chọn thời gian nhận đồ", Toast.LENGTH_SHORT)
-                        .show()
-                }
+            if (listCart.isNotEmpty() && pickUpTime.isEmpty()) {
+                Toast.makeText(this, "Vui lòng chọn thời gian nhận đồ", Toast.LENGTH_SHORT).show()
             } else {
-                if (clientSecretKey != null) {
-                    paymentFlow()
-                } else {
-                    Toast.makeText(
-                        this,
-                        "Thanh toán chưa sẵn sàng, vui lòng đợi",
-                        Toast.LENGTH_SHORT
-                    ).show()
+                when (binding.rdGroupPayment.checkedRadioButtonId) {
+                    R.id.rdVnpay -> {
+                        processVNPayPayment()
+                    }
+
+                    R.id.rdVisa -> {
+                        if (clientSecretKey != null) {
+                            paymentFlow()
+                        } else {
+                            Log.e("PaymentFlow", "Client secret key is not initialized")
+                            Toast.makeText(
+                                this,
+                                "Thanh toán chưa sẵn sàng, vui lòng đợi",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
+                    }
                 }
             }
         }
@@ -329,6 +331,216 @@ class PaymentDetailActivity : AppCompatActivity() {
         }
 
         binding.linearLayoutPoint.visibility = View.GONE
+
+        binding.rdVnpay.isChecked = true
+
+        if (intent.getBooleanExtra("vnpay_return", false)) {
+            val isValid = intent.getBooleanExtra("vnpay_valid", false)
+            val responseCode = intent.getStringExtra("vnpay_response_code")
+            val returnUrl = intent.getStringExtra("vnpay_return_url")
+
+            if (responseCode == null || returnUrl == null) {
+                Log.e("VNPayError", "Missing VNPay response data")
+                Toast.makeText(this, "Lỗi xử lý thanh toán VNPay", Toast.LENGTH_SHORT).show()
+                return
+            }
+
+            Log.d("VNPayDebug", "Processing VNPay return: valid=$isValid, code=$responseCode")
+            processVNPayResult(isValid, responseCode, returnUrl)
+        }
+    }
+
+    private fun processVNPayPayment() {
+        try {
+            val orderId = "TICKET_${UUID.randomUUID().toString().replace("-", "").substring(0, 8)}"
+            val orderInfo = "Thanh toan ve xem phim - $orderId"
+            val ipAddress = getDeviceIpAddress() ?: "127.0.0.1"
+            val amount = (actualPay - discountApplied).toLong()
+
+            Log.d("VNPayPayment", "Starting VNPay payment with orderId: $orderId, amount: $amount")
+
+            val paymentUrl = VNPayUtils.createPaymentUrl(
+                amount = amount,
+                orderInfo = orderInfo,
+                orderId = orderId,
+                ipAddr = ipAddress,
+                returnUrl = VNPayConfig.RETURN_URL_TICKET
+            )
+
+            Log.d("VNPayPayment", "Payment URL created: $paymentUrl")
+
+            // Store current state for return
+            val sharedPref = getSharedPreferences("vnpay_orders", Context.MODE_PRIVATE)
+            with(sharedPref.edit()) {
+                putString("current_order_id", orderId)
+                putString("current_order_info", orderInfo)
+                putLong("current_amount", amount)
+                putFloat("current_discount", discountApplied.toFloat())
+                putInt("current_points", pointsToDeduct)
+                putString("current_pickup_time", pickUpTime)
+                putString("current_payment_method", "VNPAY")
+                putString("current_cinema_id", intent.getStringExtra("cinema_id"))
+                putString("current_cinema_name", intent.getStringExtra("cinema_name"))
+                putString("current_showtime_id", intent.getStringExtra("showtime_id"))
+                putString("current_showtime_time", intent.getStringExtra("showtime_time"))
+                putString("current_room_id", intent.getStringExtra("room_id"))
+                putString("current_movie_id", intent.getStringExtra("movie_id"))
+                putString("current_seat_name", intent.getStringExtra("seat_name"))
+                putString("current_seat_price", intent.getStringExtra("seat_price"))
+                putLong("current_time_left", intent.getLongExtra("time_left", 0L))
+                
+                // Store movie information
+                putString("current_movie_title", intent.getStringExtra("title"))
+                putString("current_movie_poster_url", intent.getStringExtra("poster_url"))
+                putString("current_movie_country", intent.getStringExtra("country"))
+                putString("current_movie_release_year", intent.getStringExtra("release_year"))
+                putString("current_movie_language", intent.getStringExtra("language"))
+                putInt("current_movie_duration", intent.getIntExtra("duration", 0))
+                putString("current_movie_genre", intent.getStringExtra("genre"))
+                putString("current_movie_synopsis", intent.getStringExtra("synopsis"))
+                putString("current_movie_director_id", intent.getStringExtra("director_id"))
+                putString("current_movie_status", intent.getStringExtra("status"))
+                putString("current_movie_trailer_url", intent.getStringExtra("trailer_url"))
+                putString("current_movie_age_rating", intent.getStringExtra("age_rating"))
+                putFloat("current_movie_rating", intent.getFloatExtra("rating", 0f))
+                putString("current_movie_banner", intent.getStringExtra("banner"))
+                
+                // Convert ArrayList to Set<String> for storage
+                intent.getStringArrayListExtra("ticket_ids")?.let { ticketIds ->
+                    putStringSet("current_ticket_ids", ticketIds.toSet())
+                }
+                intent.getStringArrayListExtra("selected_seat_ids")?.let { seatIds ->
+                    putStringSet("current_selected_seat_ids", seatIds.toSet())
+                }
+                intent.getStringArrayListExtra("actor_ids")?.let { actorIds ->
+                    putStringSet("current_actor_ids", actorIds.toSet())
+                }
+                
+                putFloat("current_total_price_seats", intent.getDoubleExtra("total_price_seats", 0.0).toFloat())
+                putFloat("current_total_price_food", intent.getDoubleExtra("total_price_food", 0.0).toFloat())
+
+                // Store food cart information if cart is not empty
+                if (listCart.isNotEmpty()) {
+                    // Store cart items count
+                    putInt("current_cart_size", listCart.size)
+                    
+                    // Store each cart item
+                    listCart.forEachIndexed { index, cart ->
+                        putString("current_cart_item_id_$index", cart.itemId)
+                        putString("current_cart_item_name_$index", cart.title)
+                        putString("current_cart_item_image_$index", cart.picUrl)
+                        putFloat("current_cart_item_price_$index", cart.price?.toFloat() ?: 0f)
+                        putInt("current_cart_item_quantity_$index", cart.quantity ?: 1)
+                    }
+                }
+                
+                apply()
+            }
+
+            // Open browser for payment
+            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(paymentUrl))
+            try {
+                startActivity(intent)
+            } catch (e: ActivityNotFoundException) {
+                Log.e("VNPayPayment", "No browser found to handle payment URL")
+                Toast.makeText(this, "Không thể mở trình duyệt để thanh toán", Toast.LENGTH_SHORT).show()
+            }
+
+        } catch (e: Exception) {
+            Log.e("VNPayPayment", "Error creating VNPay payment: ${e.message}")
+            Toast.makeText(this, "Lỗi tạo thanh toán VNPay: ${e.message}", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun processVNPayResult(isValid: Boolean, responseCode: String?, returnUrl: String) {
+        if (isValid) {
+            when (responseCode) {
+                "00" -> {
+                    // Payment successful
+                    Log.d("VNPayReturn", "Payment successful")
+
+                    // Get stored order info
+                    val sharedPref = getSharedPreferences("vnpay_orders", Context.MODE_PRIVATE)
+                    val storedOrderId = sharedPref.getString("current_order_id", "")
+                    val returnedOrderId = VNPayUtils.getOrderIdFromReturnUrl(returnUrl)
+                    val userId = SessionManager.getUserId(this).toString()
+
+                    if (storedOrderId == returnedOrderId) {
+                        // Deduct points only on successful payment
+                        if (pointsToDeduct > 0) {
+                            viewModel.deductCustomerPoints(userId, pointsToDeduct)
+                        }
+
+                        // Convert Set<String> back to ArrayList
+                        val ticketIds = ArrayList(sharedPref.getStringSet("current_ticket_ids", emptySet()) ?: emptySet())
+                        val selectedSeatIds = ArrayList(sharedPref.getStringSet("current_selected_seat_ids", emptySet()) ?: emptySet())
+                        val showtimeId = sharedPref.getString("current_showtime_id", "") ?: return
+
+                        // Save payment data
+                        viewModel.savePaymentData(
+                            ticketIds = ticketIds,
+                            selectedSeatIds = selectedSeatIds,
+                            showtimeId = showtimeId,
+                            userId = userId,
+                            totalPriceSeats = sharedPref.getFloat("current_total_price_seats", 0f).toDouble(),
+                            totalPriceFood = sharedPref.getFloat("current_total_price_food", 0f).toDouble(),
+                            fee = fee,
+                            discount = sharedPref.getFloat("current_discount", 0f).toDouble(),
+                            actualPay = actualPay,
+                            cartManager = cartManager,
+                            pickUpTime = sharedPref.getString("current_pickup_time", "") ?: "",
+                            "VNPAY"
+                        )
+
+                        // Clear stored order data
+                        with(sharedPref.edit()) {
+                            clear()
+                            apply()
+                        }
+
+                        Log.d("VNPayReturn", "Ticket booking saved successfully")
+
+                    } else {
+                        Log.e("VNPayReturn", "Order ID mismatch: stored=$storedOrderId, returned=$returnedOrderId")
+                        Toast.makeText(this, "Lỗi xác thực đơn hàng", Toast.LENGTH_SHORT).show()
+                    }
+                }
+                "24" -> {
+                    // Payment cancelled
+                    Log.d("VNPayReturn", "Payment cancelled by user")
+                    Toast.makeText(this, "Thanh toán đã bị hủy", Toast.LENGTH_SHORT).show()
+                }
+                else -> {
+                    // Payment failed
+                    Log.e("VNPayReturn", "Payment failed with response code: $responseCode")
+                    Toast.makeText(this, "Thanh toán thất bại. Mã lỗi: $responseCode", Toast.LENGTH_SHORT).show()
+                }
+            }
+        } else {
+            Log.e("VNPayReturn", "Invalid VNPay return URL signature")
+            Toast.makeText(this, "Chữ ký không hợp lệ", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun getDeviceIpAddress(): String? {
+        try {
+            val wifiManager = applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
+            val ipAddress = wifiManager.connectionInfo.ipAddress
+            return if (ipAddress != 0) {
+                String.format(
+                    "%d.%d.%d.%d",
+                    (ipAddress and 0xff),
+                    (ipAddress shr 8 and 0xff),
+                    (ipAddress shr 16 and 0xff),
+                    (ipAddress shr 24 and 0xff)
+                )
+            } else {
+                null
+            }
+        } catch (e: Exception) {
+            Log.e("VNPayIntent", "Lỗi khi lấy địa chỉ IP: ${e.message}")
+            return null
+        }
     }
 
     private fun fetchRoomName(roomId: String) {
@@ -515,16 +727,6 @@ class PaymentDetailActivity : AppCompatActivity() {
     }
 
     private fun showCompletedDialog() {
-        val cinemaName = intent.getStringExtra("cinema_name")
-        val showtimeTime = intent.getStringExtra("showtime_time")
-        val movieTitle = intent.getStringExtra("title")
-        val movieDuration = intent.getIntExtra("duration", 0)
-        val movieAgeRating = intent.getStringExtra("age_rating")
-        val seatName = intent.getStringExtra("seat_name")
-        val moviePosterUrl = intent.getStringExtra("poster_url")
-        val movieGenre = intent.getStringExtra("genre")
-        val movieDirector = intent.getStringExtra("director")
-
         val dialog = Dialog(this)
         dialog.setContentView(R.layout.dialog_pay_completed)
         dialog.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
@@ -536,32 +738,12 @@ class PaymentDetailActivity : AppCompatActivity() {
         dialog.findViewById<Button>(R.id.btnBackToHome).setOnClickListener {
             dialog.dismiss()
             setResult(RESULT_OK)
+            val mainIntent = Intent(this, MainActivity::class.java).apply {
+                addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
+            }
+            startActivity(mainIntent)
             finish()
             overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right)
-        }
-
-        dialog.findViewById<Button>(R.id.btnViewTicket).setOnClickListener {
-            dialog.dismiss()
-            val intent = Intent(this, ViewTicketActivity::class.java)
-            if (billId.isNotEmpty()) {
-                intent.putExtra("bill_id", billId)
-            }
-            intent.putExtra("total_price", totalPrice)
-            intent.putExtra("poster_url", moviePosterUrl)
-            intent.putExtra("director", movieDirector)
-            intent.putExtra("genre", movieGenre)
-            intent.putExtra("title", movieTitle)
-            intent.putExtra("cinema_name", cinemaName)
-            intent.putExtra("duration", movieDuration)
-            intent.putExtra("showtime_time", showtimeTime)
-            intent.putExtra("age_rating", movieAgeRating)
-            intent.putExtra("seat_name", seatName)
-            intent.putExtra("room_name", roomName)
-            startActivity(intent)
-            setResult(RESULT_OK)
-            countDownTimer.cancel()
-            finish()
-            overridePendingTransition(R.anim.slide_out_right, R.anim.slide_in_left)
         }
     }
 
@@ -729,7 +911,8 @@ class PaymentDetailActivity : AppCompatActivity() {
                     discount = discountApplied,
                     actualPay = actualPay,
                     cartManager = cartManager,
-                    pickUpTime = pickUpTime
+                    pickUpTime = pickUpTime,
+                    "VISA"
                 )
             }
 
@@ -748,98 +931,6 @@ class PaymentDetailActivity : AppCompatActivity() {
         }
     }
 
-    fun sendNotificationWithFCMv1(
-        context: Context,
-        recipientToken: String,
-        senderName: String,
-        messageText: String
-    ) {
-        val cinemaName = intent.getStringExtra("cinema_name")
-        val showtimeTime = intent.getStringExtra("showtime_time")
-        val movieTitle = intent.getStringExtra("title")
-        val movieDuration = intent.getIntExtra("duration", 0)
-        val movieAgeRating = intent.getStringExtra("age_rating")
-        val seatName = intent.getStringExtra("seat_name")
-
-        FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
-            if (!task.isSuccessful) {
-                Log.e("FCM", "Lấy token thất bại", task.exception)
-                return@addOnCompleteListener
-            }
-            val token = task.result
-            Log.d("FCM", "Token của thiết bị: $token")
-        }
-        CoroutineScope(Dispatchers.IO).launch {
-            val projectId = "shoponline-f6905"
-
-            val googleCredentials = try {
-                val inputStream = context.assets.open("service-account.json")
-                GoogleCredentials.fromStream(inputStream)
-                    .createScoped(listOf("https://www.googleapis.com/auth/firebase.messaging"))
-            } catch (e: IOException) {
-                Log.e("RoomChatViewModel", "Error reading service-account.json", e)
-                return@launch
-            }
-
-            try {
-                googleCredentials.refreshIfExpired()
-            } catch (e: IOException) {
-                Log.e("RoomChatViewModel", "Error refreshing Google credentials", e)
-                return@launch
-            }
-
-            val accessToken = googleCredentials.accessToken.tokenValue
-
-            val notificationJson = JSONObject().apply {
-                put("title", senderName)
-                put("body", messageText)
-            }
-
-            val dataJson = JSONObject().apply {
-                put("title", senderName)
-                put("message", messageText)
-                put("cinema_name", cinemaName)
-                put("showtime_time", showtimeTime)
-                put("movie_title", movieTitle)
-                put("duration", movieDuration)
-                put("age_rating", movieAgeRating)
-                put("seat_name", seatName)
-                put("bill_id", billId)
-            }
-
-            val messageJson = JSONObject().apply {
-                put("token", recipientToken)
-                put("notification", notificationJson)
-                put("data", dataJson)
-            }
-
-            val requestBodyJson = JSONObject().apply {
-                put("message", messageJson)
-            }
-
-            val client = OkHttpClient()
-            val mediaType = "application/json; UTF-8".toMediaTypeOrNull()
-            val requestBody = requestBodyJson.toString().toRequestBody(mediaType)
-
-            val request = Request.Builder()
-                .url("https://fcm.googleapis.com/v1/projects/$projectId/messages:send")
-                .addHeader("Authorization", "Bearer $accessToken")
-                .addHeader("Content-Type", "application/json; UTF-8")
-                .post(requestBody)
-                .build()
-
-            try {
-                val response = client.newCall(request).execute()
-                if (response.isSuccessful) {
-                    Log.d("RoomChatViewModel", "Notification sent successfully!")
-                } else {
-                    Log.e("RoomChatViewModel", "Error sending notification: ${response.message}")
-                }
-            } catch (e: IOException) {
-                Log.e("RoomChatViewModel", "Error executing FCM request", e)
-            }
-        }
-    }
 
     private fun showPickUpTimeDialog() {
         val dialog = BottomSheetDialog(this)

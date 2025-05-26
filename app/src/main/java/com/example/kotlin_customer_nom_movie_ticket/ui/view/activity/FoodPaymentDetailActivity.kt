@@ -2,10 +2,14 @@ package com.example.kotlin_customer_nom_movie_ticket.ui.view.activity
 
 import android.annotation.SuppressLint
 import android.app.Dialog
+import android.content.ActivityNotFoundException
+import android.content.Context
 import android.content.Intent
 import android.graphics.Color
 import android.graphics.Paint.Style
 import android.graphics.drawable.ColorDrawable
+import android.net.Uri
+import android.net.wifi.WifiManager
 import android.os.Bundle
 import android.util.Log
 import android.view.View
@@ -28,6 +32,8 @@ import com.example.kotlin_customer_nom_movie_ticket.data.model.Cart
 import com.example.kotlin_customer_nom_movie_ticket.databinding.ActivityFoodPaymentDetailBinding
 import com.example.kotlin_customer_nom_movie_ticket.service.stripe.ApiUtilities
 import com.example.kotlin_customer_nom_movie_ticket.service.stripe.Utils
+import com.example.kotlin_customer_nom_movie_ticket.service.vnpay.VNPayConfig
+import com.example.kotlin_customer_nom_movie_ticket.service.vnpay.VNPayUtils
 import com.example.kotlin_customer_nom_movie_ticket.ui.adapter.FoodOrderAdapter
 import com.example.kotlin_customer_nom_movie_ticket.util.CartManager
 import com.example.kotlin_customer_nom_movie_ticket.util.SessionManager
@@ -46,6 +52,7 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
 import java.util.TimeZone
+import java.util.UUID
 import kotlin.math.min
 
 class FoodPaymentDetailActivity : AppCompatActivity() {
@@ -73,6 +80,7 @@ class FoodPaymentDetailActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        Log.d("VNPayDebug", "onCreate called with intent: ${intent.data}")
         binding = ActivityFoodPaymentDetailBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
@@ -160,16 +168,25 @@ class FoodPaymentDetailActivity : AppCompatActivity() {
             if (pickUpTime.isEmpty()) {
                 Toast.makeText(this, "Vui lòng chọn thời gian nhận đồ", Toast.LENGTH_SHORT).show()
             } else {
-                if (clientSecretKey != null) {
-                    paymentFlow()
-                } else {
-                    Log.e("PaymentFlow", "Client secret key is not initialized")
-                    Toast.makeText(
-                        this,
-                        "Thanh toán chưa sẵn sàng, vui lòng đợi",
-                        Toast.LENGTH_SHORT
-                    )
-                        .show()
+                when (binding.rdGroupPayment.checkedRadioButtonId) {
+                    R.id.rdVnpay -> {
+                        // vnpay
+                        processVNPayPayment()
+                    }
+
+                    R.id.rdVisa -> {
+                        if (clientSecretKey != null) {
+                            paymentFlow()
+                        } else {
+                            Log.e("PaymentFlow", "Client secret key is not initialized")
+                            Toast.makeText(
+                                this,
+                                "Thanh toán chưa sẵn sàng, vui lòng đợi",
+                                Toast.LENGTH_SHORT
+                            )
+                                .show()
+                        }
+                    }
                 }
             }
         }
@@ -193,6 +210,138 @@ class FoodPaymentDetailActivity : AppCompatActivity() {
 
         // Initially hide linearLayoutPoint
         binding.linearLayoutPoint.visibility = View.GONE
+
+        binding.rdVnpay.isChecked = true
+
+        if (intent.getBooleanExtra("vnpay_return", false)) {
+            val isValid = intent.getBooleanExtra("vnpay_valid", false)
+            val responseCode = intent.getStringExtra("vnpay_response_code")
+            val returnUrl = intent.getStringExtra("vnpay_return_url") ?: ""
+
+            Log.d("VNPayDebug", "Processing VNPay return: valid=$isValid, code=$responseCode")
+            processVNPayResult(isValid, responseCode, returnUrl)
+        }
+
+    }
+
+    override fun onResume() {
+        super.onResume()
+        Log.d("VNPayDebug", "onResume called")
+    }
+
+    private fun processVNPayPayment() {
+        try {
+            val orderId = "FOOD_${UUID.randomUUID().toString().replace("-", "").substring(0, 8)}"
+            val orderInfo = "Thanh toan don hang thuc an - $orderId"
+            val ipAddress = getDeviceIpAddress() ?: "127.0.0.1"
+            val amount = (totalPriceToPay - discountApplied).toLong()
+
+            Log.d("VNPayPayment", "Starting VNPay payment with orderId: $orderId, amount: $amount")
+
+            val paymentUrl = VNPayUtils.createPaymentUrl(
+                amount = amount,
+                orderInfo = orderInfo,
+                orderId = orderId,
+                ipAddr = ipAddress,
+                returnUrl = VNPayConfig.RETURN_URL_FOOD
+            )
+
+            Log.d("VNPayPayment", "Payment URL created: $paymentUrl")
+
+            // Store order info for verification later
+            val sharedPref = getSharedPreferences("vnpay_orders", Context.MODE_PRIVATE)
+            with(sharedPref.edit()) {
+                putString("current_order_id", orderId)
+                putString("current_order_info", orderInfo)
+                putLong("current_amount", amount)
+                putFloat("current_discount", discountApplied.toFloat())
+                putInt("current_points", pointsToDeduct)
+                putString("current_pickup_time", pickUpTime)
+                apply()
+            }
+
+            // Open browser for payment
+            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(paymentUrl))
+            try {
+                startActivity(intent)
+            } catch (e: ActivityNotFoundException) {
+                Log.e("VNPayPayment", "No browser found to handle payment URL")
+                Toast.makeText(this, "Không thể mở trình duyệt để thanh toán", Toast.LENGTH_SHORT).show()
+            }
+
+        } catch (e: Exception) {
+            Log.e("VNPayPayment", "Error creating VNPay payment: ${e.message}")
+            Toast.makeText(this, "Lỗi tạo thanh toán VNPay: ${e.message}", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun processVNPayResult(isValid: Boolean, responseCode: String?, returnUrl: String) {
+        if (isValid) {
+            when (responseCode) {
+                "00" -> {
+                    // Payment successful
+                    Log.d("VNPayReturn", "Payment successful")
+
+                    // Get stored order info
+                    val sharedPref = getSharedPreferences("vnpay_orders", Context.MODE_PRIVATE)
+                    val storedOrderId = sharedPref.getString("current_order_id", "")
+                    val returnedOrderId = VNPayUtils.getOrderIdFromReturnUrl(returnUrl)
+
+                    if (storedOrderId == returnedOrderId) {
+                        val storedDiscount = sharedPref.getFloat("current_discount", 0f).toDouble()
+                        val storedPoints = sharedPref.getInt("current_points", 0)
+                        val storedPickupTime = sharedPref.getString("current_pickup_time", "")
+
+                        // Deduct points only on successful payment
+                        if (storedPoints > 0) {
+                            viewModel.deductCustomerPoints(userId, storedPoints)
+                        }
+
+                        // Save food booking
+                        viewModel.saveFoodBooking(
+                            "",
+                            cartManager,
+                            userId,
+                            totalPriceOfCart,
+                            totalPriceOfCart * 0.03,
+                            storedDiscount,
+                            storedPickupTime ?: pickUpTime,
+                            "VNPAY"
+                        )
+
+                        // Clear stored order info
+                        with(sharedPref.edit()) {
+                            remove("current_order_id")
+                            remove("current_order_info")
+                            remove("current_amount")
+                            remove("current_discount")
+                            remove("current_points")
+                            remove("current_pickup_time")
+                            apply()
+                        }
+
+                        Log.d("VNPayReturn", "Food booking saved successfully")
+
+                    } else {
+                        Log.e("VNPayReturn", "Order ID mismatch: stored=$storedOrderId, returned=$returnedOrderId")
+                        Toast.makeText(this, "Lỗi xác thực đơn hàng", Toast.LENGTH_SHORT).show()
+                    }
+                }
+                "24" -> {
+                    // Payment cancelled
+                    Log.d("VNPayReturn", "Payment cancelled by user")
+                    Toast.makeText(this, "Thanh toán đã bị hủy", Toast.LENGTH_SHORT).show()
+                }
+                else -> {
+                    // Payment failed
+                    Log.e("VNPayReturn", "Payment failed with response code: $responseCode")
+                    Toast.makeText(this, "Thanh toán thất bại. Mã lỗi: $responseCode", Toast.LENGTH_SHORT).show()
+                }
+            }
+        } else {
+            Log.e("VNPayReturn", "Invalid VNPay return URL signature")
+            Toast.makeText(this, "Chữ ký không hợp lệ", Toast.LENGTH_SHORT).show()
+        }
     }
 
     private fun showUsePointDialog() {
@@ -300,8 +449,11 @@ class FoodPaymentDetailActivity : AppCompatActivity() {
 
         dialog.findViewById<Button>(R.id.btnOk).setOnClickListener {
             dialog.dismiss()
+            val mainIntent = Intent(this, MainActivity::class.java).apply {
+                addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
+            }
+            startActivity(mainIntent)
             finish()
-            overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right)
         }
     }
 
@@ -317,6 +469,8 @@ class FoodPaymentDetailActivity : AppCompatActivity() {
             binding.btnContinue.visibility = View.GONE
             binding.btnChoosePickUpTime.visibility = View.GONE
             binding.btnUsePoint.visibility = View.GONE
+            binding.textView55.visibility = View.GONE
+            binding.rdGroupPayment.visibility = View.GONE
         } else {
             binding.rcvCart.visibility = View.VISIBLE
             binding.emptyCartView.visibility = View.GONE
@@ -328,6 +482,8 @@ class FoodPaymentDetailActivity : AppCompatActivity() {
             binding.btnContinue.visibility = View.VISIBLE
             binding.btnChoosePickUpTime.visibility = View.VISIBLE
             binding.btnUsePoint.visibility = View.VISIBLE
+            binding.textView55.visibility = View.VISIBLE
+            binding.rdGroupPayment.visibility = View.VISIBLE
         }
     }
 
@@ -523,10 +679,13 @@ class FoodPaymentDetailActivity : AppCompatActivity() {
                     totalPriceOfCart,
                     totalPriceOfCart * 0.03,
                     discountApplied,
-
-                    pickUpTime
+                    pickUpTime,
+                    "VISA"
                 )
-                Log.d("PaymentSheetResult", "cartManager: $cartManager, userId: $userId, totalPriceToPay: $totalPriceToPay, pickUpTime: $pickUpTime")
+                Log.d(
+                    "PaymentSheetResult",
+                    "cartManager: $cartManager, userId: $userId, totalPriceToPay: $totalPriceToPay, pickUpTime: $pickUpTime"
+                )
                 Log.d("PaymentSheetResult", "Payment completed")
             }
 
@@ -598,6 +757,7 @@ class FoodPaymentDetailActivity : AppCompatActivity() {
             binding.tvTimePickUp.text = "Nhận đồ lúc $currentTime"
             binding.tvTimeValue.text = dateString
             pickUpTime = "$dayOfWeek $currentTime"
+            Log.d("PickUpTime", "Set pickUpTime to: $pickUpTime")
         }
 
         btnPickUpLater?.setOnClickListener {
@@ -742,6 +902,28 @@ class FoodPaymentDetailActivity : AppCompatActivity() {
         }
     }
 
+
+    private fun getDeviceIpAddress(): String? {
+        try {
+            val wifiManager = applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
+            val ipAddress = wifiManager.connectionInfo.ipAddress
+            return if (ipAddress != 0) {
+                String.format(
+                    "%d.%d.%d.%d",
+                    (ipAddress and 0xff),
+                    (ipAddress shr 8 and 0xff),
+                    (ipAddress shr 16 and 0xff),
+                    (ipAddress shr 24 and 0xff)
+                )
+            } else {
+                null
+            }
+        } catch (e: Exception) {
+            Log.e("VNPayIntent", "Lỗi khi lấy địa chỉ IP: ${e.message}")
+            return null
+        }
+    }
+
     private fun updateDateText(dateText: TextView, hour: Int, minute: Int) {
         val dateFormat = SimpleDateFormat("dd MMM, yyyy", Locale("vi", "VN")).format(calendar.time)
         val dayOfWeekFormat = SimpleDateFormat("EEEE", Locale("vi", "VN"))
@@ -793,4 +975,6 @@ class FoodPaymentDetailActivity : AppCompatActivity() {
             e.printStackTrace()
         }
     }
+
+    
 }

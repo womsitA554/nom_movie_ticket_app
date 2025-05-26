@@ -687,7 +687,7 @@
                 android:id="@+id/btnUsePoint"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginHorizontal="20dp"
+                android:layout_marginHorizontal="15dp"
                 android:layout_marginTop="20dp"
                 android:orientation="horizontal"
                 android:background="@drawable/edit_text_background"
@@ -750,12 +750,57 @@
             <EditText
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginHorizontal="20dp"
+                android:layout_marginHorizontal="15dp"
                 android:layout_marginTop="12dp"
                 android:background="@drawable/edit_text_background"
                 android:fontFamily="@font/urbanist_regular"
                 android:hint="Nhập mã khuyến mại hoặc phiếu giảm giá"
                 android:padding="15dp" />
+
+            <TextView
+                android:id="@+id/textView55"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="15dp"
+                android:layout_marginTop="30dp"
+                android:fontFamily="@font/urbanist_bold"
+                android:text="Chọn phương thức thanh toán"
+                style="@style/TextColor"
+                android:textSize="17sp"
+                android:textStyle="bold" />
+
+
+            <RadioGroup
+                android:id="@+id/rdGroupPayment"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@drawable/edit_text_background"
+                android:padding="15dp"
+                android:layout_marginTop="20dp"
+                android:layout_marginHorizontal="15dp">
+
+                <RadioButton
+                    android:id="@+id/rdVnpay"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layoutDirection="rtl"
+                    android:drawableEnd="@drawable/ic_vnpay_sized"
+                    android:drawablePadding="10dp"
+                    android:fontFamily="@font/urbanist_bold"
+                    style="@style/TextColor"
+                    android:text="VNPAY" />
+
+                <RadioButton
+                    android:id="@+id/rdVisa"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layoutDirection="rtl"
+                    android:drawablePadding="10dp"
+                    android:drawableEnd="@drawable/visa_icon"
+                    android:fontFamily="@font/urbanist_bold"
+                    style="@style/TextColor"
+                    android:text="Thẻ VISA" />
+            </RadioGroup>
 
             <androidx.appcompat.widget.AppCompatButton
                 android:id="@+id/btnContinue"
